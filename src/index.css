@@ -22,11 +22,15 @@ body {
 }
 
 .input {
-    @apply w-full h-12 px-4 rounded-3xl shadow-sm opacity-80;
+    @apply w-full h-10 px-4 rounded-3xl shadow-sm opacity-80;
 }
 
 .input-label {
     @apply text-sm text-white ml-3 mb-1 block;
+}
+
+.input-error {
+    @apply text-xs text-red-500 mt-1 ml-3 mb-1 h-1;
 }
 
 .hover {
