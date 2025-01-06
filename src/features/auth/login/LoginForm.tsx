@@ -1,23 +1,78 @@
 import CustomInput from "../../../components/auth/CustomInput.tsx";
 import { InputType } from "../../../shared/enums/input-type.enum.ts";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuth } from "../../../shared/hooks/useAuth.ts";
+import { useState } from "react";
+import Popup from "../../../components/common/Popup.tsx";
+import { useNavigate } from "react-router-dom";
+
+const loginSchema = z.object({
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+type FormData = z.infer<typeof loginSchema>;
 
 const LoginForm = () => {
+    const {
+        register,
+        handleSubmit,
+        formState: { isDirty, isValid, errors },
+    } = useForm<FormData>({
+        resolver: zodResolver(loginSchema),
+        mode: "onChange",
+    });
+    const { login, isLoading } = useAuth();
+    const [popupMessage, setPopup] = useState<string>("");
+    const navigate = useNavigate();
+
+    const onSubmit = async (data: FormData) => {
+        const response = await login(data);
+
+        if (!response.success) {
+            setPopup("Login failed. Please try again");
+        } else {
+            navigate("/dashboard");
+        }
+    };
+
     return (
-        <form className="flex flex-col gap-y-4 w-full">
-            <CustomInput labelTitle="Username" inputType={InputType.TEXT} />
-            <div className="flex flex-col">
+        <>
+            <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="flex flex-col gap-y-4 w-full"
+            >
                 <CustomInput
-                    labelTitle="Password"
-                    inputType={InputType.PASSWORD}
-                ></CustomInput>
-                <span className="ml-auto text-gray-500 text-sm mt-1 cursor-pointer hover:text-gray-700 transition-colors">
-                    Forgot password?
-                </span>
-            </div>
-            <button className="bg-blue-500 w-full mt-10 rounded-3xl text-white h-12 hover">
-                Login
-            </button>
-        </form>
+                    labelTitle="Email"
+                    inputType={InputType.EMAIL}
+                    registration={register("email")}
+                    error={errors.email?.message}
+                />
+                <div className="flex flex-col">
+                    <CustomInput
+                        labelTitle="Password"
+                        inputType={InputType.PASSWORD}
+                        registration={register("password")}
+                        error={errors.password?.message}
+                    ></CustomInput>
+                    <span className="ml-auto text-gray-500 text-sm mt-1 cursor-pointer hover:text-gray-700 transition-colors">
+                        Forgot password?
+                    </span>
+                </div>
+                <button
+                    type="submit"
+                    disabled={!isDirty || !isValid || isLoading}
+                    className="bg-blue-500 w-full mt-2 rounded-3xl text-white h-12 hover disabled:bg-blue-300"
+                >
+                    Login
+                </button>
+            </form>
+            {popupMessage && (
+                <Popup message={popupMessage} onClose={() => setPopup("")} />
+            )}
+        </>
     );
 };
 
