@@ -24,7 +24,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         const accessToken = localStorage.getItem("accessToken");
         if (accessToken) {
             try {
-                const response = await serverApi.post("/auth/verify", {
+                const response = await serverApi.get("/auth/verify", {
                     headers: { Authorization: `Bearer ${accessToken}` },
                 });
                 setUser(response.data.user);
