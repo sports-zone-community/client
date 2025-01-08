@@ -1,7 +1,4 @@
-import googleSvg from "../../../assets/google.svg";
-import facebookSvg from "../../../assets/facebook.svg";
 import fansImage from "../../../assets/fans-charring.png";
-import AuthIcon from "../../../components/auth/AuthIcon.tsx";
 import { Link } from "react-router-dom";
 import RegisterForm from "./RegisterForm.tsx";
 
@@ -14,10 +11,6 @@ const Register = () => {
                         Create an account
                     </span>
                     <RegisterForm />
-                    <div className="flex flex-row gap-4 w-full h-12">
-                        <AuthIcon icon={googleSvg} title="Google" />
-                        <AuthIcon icon={facebookSvg} title="Facebook" />
-                    </div>
                 </div>
                 <span className="absolute bottom-0 left-0 mb-6 ml-6 text-gray-500">
                     Have an account?{" "}

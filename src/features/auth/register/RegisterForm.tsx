@@ -1,12 +1,9 @@
 import CustomInput from "../../../components/auth/CustomInput.tsx";
 import { InputType } from "../../../shared/enums/input-type.enum.ts";
 import { useAuth } from "../../../shared/hooks/useAuth.ts";
-import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import Popup from "../../../components/common/Popup.tsx";
 
 const registerSchema = z
     .object({
@@ -30,15 +27,13 @@ const registerSchema = z
 type FormData = z.infer<typeof registerSchema>;
 
 const RegisterForm = () => {
-    const navigate = useNavigate();
     const { register: registerUser, isLoading } = useAuth();
-    const [popupMessage, setPopup] = useState<string>("");
-    const [isSuccessful, setIsSuccessful] = useState(false);
 
     const {
         register,
         handleSubmit,
         formState: { errors, isDirty, isValid },
+        reset,
     } = useForm<FormData>({
         resolver: zodResolver(registerSchema),
         mode: "onChange",
@@ -46,22 +41,8 @@ const RegisterForm = () => {
 
     const onSubmit = async (data: FormData) => {
         const { confirmPassword, ...registerData } = data;
-        const response = await registerUser(registerData);
-
-        if (!response.success) {
-            setPopup("Registration failed. Please try again");
-            setIsSuccessful(false);
-        } else {
-            setPopup("Registration successful. You can now login");
-            setIsSuccessful(true);
-        }
-    };
-
-    const handlePopupClose = () => {
-        setPopup("");
-        if (isSuccessful) {
-            navigate("/login");
-        }
+        await registerUser(registerData);
+        reset();
     };
 
     return (
@@ -108,9 +89,6 @@ const RegisterForm = () => {
                     Register
                 </button>
             </form>
-            {popupMessage && (
-                <Popup message={popupMessage} onClose={handlePopupClose} />
-            )}
         </>
     );
 };

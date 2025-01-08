@@ -3,7 +3,6 @@ import { User } from "../../../shared/models/User.ts";
 import serverApi from "../../api/serverApi.ts";
 import {
     AuthContextType,
-    AuthResponse,
     LoginAxiosRequest,
     LoginAxiosResponse,
     RegisterAxiosRequest,
@@ -11,6 +10,9 @@ import {
 } from "../../../shared/models/Auth.ts";
 import axios from "axios";
 import AuthContext from "./AuthContext.tsx";
+import { useGoogleLogin } from "@react-oauth/google";
+import Popup from "../../../components/common/Popup.tsx";
+import { useNavigate } from "react-router-dom";
 
 interface AuthProviderProps {
     children: ReactNode;
@@ -19,15 +21,14 @@ interface AuthProviderProps {
 const AuthProvider = ({ children }: AuthProviderProps) => {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [popupMessage, setPopup] = useState<string>("");
+    const navigate = useNavigate();
 
     const initAuth = useCallback(async () => {
         const accessToken = localStorage.getItem("accessToken");
         if (accessToken) {
             try {
-                const response = await serverApi.get("/auth/verify", {
-                    headers: { Authorization: `Bearer ${accessToken}` },
-                });
-                setUser(response.data.user);
+                await verifyUser(accessToken);
             } catch (error) {
                 localStorage.removeItem("accessToken");
                 localStorage.removeItem("refreshToken");
@@ -48,27 +49,22 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         );
     };
 
-    const register = async (
-        data: RegisterAxiosRequest
-    ): Promise<AuthResponse> => {
+    const register = async (data: RegisterAxiosRequest): Promise<void> => {
         setIsLoading(true);
 
         try {
-            const response = await serverApi.post<RegisterAxiosResponse>(
-                "/auth/register",
-                data
-            );
-            return { success: true, ...response.data };
+            await serverApi.post<RegisterAxiosResponse>("/auth/register", data);
+            setPopup("Registration successful. You can now login");
         } catch (error: any) {
+            setPopup("Registration failed. Please try again");
             const errorMessage = `Registration Failed: ${getErrorMessage(error)}`;
             console.error(errorMessage);
-            return { success: false, message: errorMessage };
         } finally {
             setIsLoading(false);
         }
     };
 
-    const login = async (data: LoginAxiosRequest): Promise<AuthResponse> => {
+    const login = async (data: LoginAxiosRequest): Promise<void> => {
         setIsLoading(true);
 
         try {
@@ -78,36 +74,45 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
             );
 
             const { accessToken, refreshToken } = response.data;
+            setTokens(accessToken, refreshToken);
 
-            localStorage.setItem("accessToken", accessToken);
-            localStorage.setItem("refreshToken", refreshToken);
-            axios.defaults.headers.common["Authorization"] =
-                `Bearer ${accessToken}`;
+            await verifyUser(accessToken);
 
-            const userResponse = await serverApi.get<{ user: User }>(
-                "/auth/verify"
-            );
-
-            setUser(userResponse.data.user);
-
-            return { success: true, message: "Login successful" };
+            navigate("/dashboard");
         } catch (error: any) {
             console.error(`Login Failed: ${getErrorMessage(error)}`);
-            return { success: false, message: "Login failed" };
+            setPopup("Login failed. Please try again");
         } finally {
             setIsLoading(false);
         }
     };
 
-    const loginWithGoogle = async () => {
-        // Open Google OAuth popup
-        window.open("/api/auth/google", "_self");
-    };
+    const loginWithGoogle = useGoogleLogin({
+        flow: "auth-code",
+        scope: "openid email profile",
+        onSuccess: async (response) => {
+            setIsLoading(true);
+            try {
+                const result = await serverApi.post<LoginAxiosResponse>(
+                    "/auth/google",
+                    {
+                        token: response.code,
+                    }
+                );
 
-    const loginWithFacebook = async () => {
-        // Open Facebook OAuth popup
-        window.open("/api/auth/facebook", "_self");
-    };
+                const { accessToken, refreshToken } = result.data;
+
+                setTokens(accessToken, refreshToken);
+                await verifyUser(accessToken);
+                navigate("/dashboard");
+            } catch (error) {
+                console.error("Google login failed:", getErrorMessage(error));
+            } finally {
+                setIsLoading(false);
+            }
+        },
+        onError: (error) => console.error("Google login error:", error),
+    });
 
     const logout = async (): Promise<void> => {
         try {
@@ -141,15 +146,30 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
             const { accessToken, refreshToken: newRefreshToken } =
                 response.data;
 
-            localStorage.setItem("accessToken", accessToken);
-            localStorage.setItem("refreshToken", newRefreshToken);
-            axios.defaults.headers.common["Authorization"] =
-                `Bearer ${accessToken}`;
+            setTokens(accessToken, newRefreshToken);
 
             return accessToken;
         } catch (error) {
             await logout();
             throw new Error("Session expired");
+        }
+    };
+
+    const setTokens = (accessToken: string, refreshToken: string) => {
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("refreshToken", refreshToken);
+        axios.defaults.headers.common["Authorization"] =
+            `Bearer ${accessToken}`;
+    };
+
+    const verifyUser = async (accessToken: string) => {
+        try {
+            const response = await serverApi.get("/auth/verify", {
+                headers: { Authorization: `Bearer ${accessToken}` },
+            });
+            setUser(response.data.user);
+        } catch (error) {
+            console.error("Verify user failed:", error);
         }
     };
 
@@ -161,11 +181,15 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         logout,
         refreshAccessToken,
         loginWithGoogle,
-        loginWithFacebook,
     };
 
     return (
-        <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+        <AuthContext.Provider value={value}>
+            {children}
+            {popupMessage && (
+                <Popup message={popupMessage} onClose={() => setPopup("")} />
+            )}
+        </AuthContext.Provider>
     );
 };
 

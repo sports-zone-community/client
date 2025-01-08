@@ -4,9 +4,6 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "../../../shared/hooks/useAuth.ts";
-import { useState } from "react";
-import Popup from "../../../components/common/Popup.tsx";
-import { useNavigate } from "react-router-dom";
 
 const loginSchema = z.object({
     email: z.string().email("Invalid email address"),
@@ -25,23 +22,11 @@ const LoginForm = () => {
         mode: "onChange",
     });
     const { login, isLoading } = useAuth();
-    const [popupMessage, setPopup] = useState<string>("");
-    const navigate = useNavigate();
-
-    const onSubmit = async (data: FormData) => {
-        const response = await login(data);
-
-        if (!response.success) {
-            setPopup("Login failed. Please try again");
-        } else {
-            navigate("/dashboard");
-        }
-    };
 
     return (
         <>
             <form
-                onSubmit={handleSubmit(onSubmit)}
+                onSubmit={handleSubmit(login)}
                 className="flex flex-col gap-y-4 w-full"
             >
                 <CustomInput
@@ -69,9 +54,6 @@ const LoginForm = () => {
                     Login
                 </button>
             </form>
-            {popupMessage && (
-                <Popup message={popupMessage} onClose={() => setPopup("")} />
-            )}
         </>
     );
 };
