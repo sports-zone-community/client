@@ -12,7 +12,7 @@ const CreateGroup = ({ onSubmit }: CreateGroupProps) => {
   const previewUrl: string = imageFile ? URL.createObjectURL(imageFile) : '';
 
   const onSubmitForm = (data: FormInputs) => {
-    const formData = new FormData();
+    const formData: FormData = new FormData();
     formData.append('name', data.name);
     formData.append('description', data.description);
     if (data.image?.[0]) {
