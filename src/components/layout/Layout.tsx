@@ -14,8 +14,8 @@ const Layout = ({ children }: LayoutProps) => {
     return (
         <div className="bg-blue-950 min-h-screen flex">
             {!isPublicRoute && <Sidebar />}
-            <div className="flex-1">
-                <CoolBlur />
+            <div className="flex-1 relative">
+                {isPublicRoute && <CoolBlur />}
                 {children}
             </div>
         </div>

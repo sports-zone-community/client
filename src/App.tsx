@@ -7,6 +7,10 @@ import Register from "./features/auth/register/Register.tsx";
 import AuthProvider from "./features/auth/context/AuthProvider.tsx";
 import Dashboard from "./pages/dashboard/Dashboard.tsx";
 import ProtectedRoute from "./features/auth/route/ProtectedRoute.tsx";
+import Inbox from "./pages/inbox/inbox.tsx";
+import AddPost from "./pages/addPost/addPost.tsx";
+import Explore from "./pages/explore/explore.tsx";
+import Profile from "./pages/profile/profile.tsx";
 
 const App = () => {
     return (
@@ -25,6 +29,10 @@ const App = () => {
                                 </ProtectedRoute>
                             }
                         />
+                        <Route path="/inbox" element={<ProtectedRoute><Inbox /></ProtectedRoute>} />
+                        <Route path="/explore" element={<ProtectedRoute><Explore /></ProtectedRoute>} />
+                        <Route path="/add-post" element={<ProtectedRoute><AddPost /></ProtectedRoute>} />
+                        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     </Routes>
                 </Layout>
             </AuthProvider>
