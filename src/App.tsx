@@ -11,8 +11,8 @@ import ProtectedRoute from "./features/auth/route/ProtectedRoute.tsx";
 const App = () => {
     return (
         <BrowserRouter>
-            <Layout>
-                <AuthProvider>
+            <AuthProvider>
+                <Layout>
                     <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/login" element={<Login />} />
@@ -26,8 +26,8 @@ const App = () => {
                             }
                         />
                     </Routes>
-                </AuthProvider>
-            </Layout>
+                </Layout>
+            </AuthProvider>
         </BrowserRouter>
     );
 };

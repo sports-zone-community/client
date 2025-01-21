@@ -8,7 +8,8 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     if (isLoading) {
         return <Loading />;
     }
-    if (!user) {
+    //todo: return ! before user
+    if (user) {
         return <Navigate to="/login" />;
     }
     return <>{children}</>;

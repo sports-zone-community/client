@@ -30,6 +30,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
             try {
                 await verifyUser(accessToken);
             } catch (error) {
+                console.error("Verify user failed:", error);
                 localStorage.removeItem("accessToken");
                 localStorage.removeItem("refreshToken");
             }
@@ -55,7 +56,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         try {
             await serverApi.post<RegisterAxiosResponse>("/auth/register", data);
             setPopup("Registration successful. You can now login");
-        } catch (error: any) {
+        } catch (error) {
             setPopup("Registration failed. Please try again");
             const errorMessage = `Registration Failed: ${getErrorMessage(error)}`;
             console.error(errorMessage);
@@ -79,7 +80,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
             await verifyUser(accessToken);
 
             navigate("/dashboard");
-        } catch (error: any) {
+        } catch (error) {
             console.error(`Login Failed: ${getErrorMessage(error)}`);
             setPopup("Login failed. Please try again");
         } finally {
@@ -150,6 +151,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
             return accessToken;
         } catch (error) {
+            console.error("Refresh access token failed:", error);
             await logout();
             throw new Error("Session expired");
         }
