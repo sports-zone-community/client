@@ -1,9 +1,9 @@
-import axios, { HttpStatusCode } from "axios";
+import axios, { AxiosInstance, HttpStatusCode } from "axios";
 import { config } from "../../config.ts";
 import { LoginAxiosResponse } from "../../shared/models/Auth.ts";
 import { setTokens } from "../../shared/utils/auth.utils.ts";
 
-const api = axios.create({
+const api: AxiosInstance = axios.create({
     baseURL: config.apiUrl,
     withCredentials: true,
     validateStatus: (status) => status >= 200 && status < 300,
@@ -11,7 +11,8 @@ const api = axios.create({
 
 const refreshToken = async (): Promise<string | undefined> => {
     try {
-        const refreshToken = localStorage.getItem("refreshToken");
+        const refreshToken: string | null =
+            localStorage.getItem("refreshToken");
         const response = await api.post<LoginAxiosResponse>(
             `${config.authUri}/refreshToken`,
             null,
@@ -58,7 +59,7 @@ api.interceptors.response.use(
                 return Promise.reject(error);
             }
 
-            const newToken = await refreshToken();
+            const newToken: string | undefined = await refreshToken();
             error.config.headers.Authorization = `Bearer ${newToken}`;
             return api(originalRequest);
         }
