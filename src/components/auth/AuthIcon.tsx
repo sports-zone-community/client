@@ -1,8 +1,8 @@
-type AuthIconProps = {
+interface AuthIconProps {
     icon: string;
     title: string;
     onClick: () => void;
-};
+}
 
 const AuthIcon = ({ icon, title, onClick }: AuthIconProps) => {
     return (
