@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 const registerSchema = z
     .object({
-        fullName: z.string().min(2, "Full name is required"),
+        name: z.string().min(2, "Full name is required"),
         username: z.string().min(3, "Username must be at least 3 characters"),
         email: z.string().email("Invalid email address"),
         password: z
@@ -54,8 +54,8 @@ const RegisterForm = () => {
                 <CustomInput
                     labelTitle="Full Name"
                     inputType={InputType.TEXT}
-                    registration={register("fullName")}
-                    error={errors.fullName?.message}
+                    registration={register("name")}
+                    error={errors.name?.message}
                 />
                 <CustomInput
                     labelTitle="Username"

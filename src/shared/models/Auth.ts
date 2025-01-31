@@ -1,7 +1,7 @@
 import { User } from "./User.ts";
 
 export interface RegisterAxiosRequest {
-    fullName: string;
+    name: string;
     username: string;
     email: string;
     password: string;
