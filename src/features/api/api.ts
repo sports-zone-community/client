@@ -1,18 +1,13 @@
 import axios, { HttpStatusCode } from "axios";
 import { config } from "../../config.ts";
 import { LoginAxiosResponse } from "../../shared/models/Auth.ts";
+import { setTokens } from "../../shared/utils/auth.utils.ts";
 
 const api = axios.create({
     baseURL: config.apiUrl,
     withCredentials: true,
     validateStatus: (status) => status >= 200 && status < 300,
 });
-
-const setTokens = (accessToken: string, refreshToken: string) => {
-    localStorage.setItem("accessToken", accessToken);
-    localStorage.setItem("refreshToken", refreshToken);
-    axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
-};
 
 const refreshToken = async (): Promise<string | undefined> => {
     try {

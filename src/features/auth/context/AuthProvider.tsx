@@ -14,6 +14,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 import Popup from "../../../components/common/Popup.tsx";
 import { useNavigate } from "react-router-dom";
 import { config } from "../../../config.ts";
+import { setTokens } from "../../../shared/utils/auth.utils.ts";
 
 interface AuthProviderProps {
     children: ReactNode;
@@ -131,13 +132,6 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
             setUser(null);
             delete axios.defaults.headers.common["Authorization"];
         }
-    };
-
-    const setTokens = (accessToken: string, refreshToken: string) => {
-        localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("refreshToken", refreshToken);
-        axios.defaults.headers.common["Authorization"] =
-            `Bearer ${accessToken}`;
     };
 
     const verifyUser = async (accessToken: string) => {
