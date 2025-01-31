@@ -1,6 +1,6 @@
-import { ReactNode, useCallback, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { User } from "../../../shared/models/User.ts";
-import serverApi from "../../api/serverApi.ts";
+import api from "../../api/api.ts";
 import {
     AuthContextType,
     LoginAxiosRequest,
@@ -8,11 +8,12 @@ import {
     RegisterAxiosRequest,
     RegisterAxiosResponse,
 } from "../../../shared/models/Auth.ts";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import AuthContext from "./AuthContext.tsx";
 import { useGoogleLogin } from "@react-oauth/google";
 import Popup from "../../../components/common/Popup.tsx";
 import { useNavigate } from "react-router-dom";
+import { config } from "../../../config.ts";
 
 interface AuthProviderProps {
     children: ReactNode;
@@ -23,23 +24,26 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [popupMessage, setPopup] = useState<string>("");
     const navigate = useNavigate();
-
-    const initAuth = useCallback(async () => {
-        const accessToken = localStorage.getItem("accessToken");
-        if (accessToken) {
-            try {
-                await verifyUser(accessToken);
-            } catch (error) {
-                localStorage.removeItem("accessToken");
-                localStorage.removeItem("refreshToken");
-            }
-        }
-        setIsLoading(false);
-    }, []);
+    const authUri: string = config.authUri;
 
     useEffect(() => {
+        const initAuth = async () => {
+            const accessToken: string | null =
+                localStorage.getItem("accessToken");
+            if (accessToken) {
+                try {
+                    await verifyUser(accessToken);
+                    navigate("/dashboard");
+                } catch (error) {
+                    localStorage.removeItem("accessToken");
+                    localStorage.removeItem("refreshToken");
+                }
+            }
+            setIsLoading(false);
+        };
+
         initAuth();
-    }, [initAuth]);
+    }, []);
 
     const getErrorMessage = (error: any): string => {
         return (
@@ -53,12 +57,11 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         setIsLoading(true);
 
         try {
-            await serverApi.post<RegisterAxiosResponse>("/auth/register", data);
+            await api.post<RegisterAxiosResponse>(`${authUri}/register`, data);
             setPopup("Registration successful. You can now login");
         } catch (error: any) {
             setPopup("Registration failed. Please try again");
-            const errorMessage = `Registration Failed: ${getErrorMessage(error)}`;
-            console.error(errorMessage);
+            console.error(`Registration Failed: ${getErrorMessage(error)}`);
         } finally {
             setIsLoading(false);
         }
@@ -68,10 +71,8 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         setIsLoading(true);
 
         try {
-            const response = await serverApi.post<LoginAxiosResponse>(
-                "/auth/login",
-                data
-            );
+            const response: AxiosResponse<LoginAxiosResponse> =
+                await api.post<LoginAxiosResponse>(`${authUri}/login`, data);
 
             const { accessToken, refreshToken } = response.data;
             setTokens(accessToken, refreshToken);
@@ -88,37 +89,37 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     };
 
     const loginWithGoogle = useGoogleLogin({
-        flow: "auth-code",
-        scope: "openid email profile",
-        onSuccess: async (response) => {
+        onSuccess: async ({ access_token }) => {
             setIsLoading(true);
             try {
-                const result = await serverApi.post<LoginAxiosResponse>(
-                    "/auth/google",
-                    {
-                        token: response.code,
-                    }
-                );
+                const response: AxiosResponse<LoginAxiosResponse> =
+                    await api.post<LoginAxiosResponse>(`${authUri}/google`, {
+                        access_token,
+                    });
 
-                const { accessToken, refreshToken } = result.data;
+                const { accessToken, refreshToken } = response.data;
 
                 setTokens(accessToken, refreshToken);
                 await verifyUser(accessToken);
                 navigate("/dashboard");
             } catch (error) {
                 console.error("Google login failed:", getErrorMessage(error));
+                setPopup("Login failed. Please try again");
             } finally {
                 setIsLoading(false);
             }
         },
-        onError: (error) => console.error("Google login error:", error),
+        onError: (error) => {
+            console.error("Google login error:", error);
+        },
     });
 
     const logout = async (): Promise<void> => {
         try {
-            const refreshToken = localStorage.getItem("refreshToken");
+            const refreshToken: string | null =
+                localStorage.getItem("refreshToken");
             if (refreshToken) {
-                await serverApi.post("/auth/logout", null, {
+                await api.post(`${authUri}/logout`, null, {
                     headers: { Authorization: `Bearer ${refreshToken}` },
                 });
             }
@@ -132,29 +133,6 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         }
     };
 
-    const refreshAccessToken = async (): Promise<string> => {
-        try {
-            const refreshToken = localStorage.getItem("refreshToken");
-            const response = await serverApi.post<LoginAxiosResponse>(
-                "/auth/refresh-token",
-                null,
-                {
-                    headers: { Authorization: `Bearer ${refreshToken}` },
-                }
-            );
-
-            const { accessToken, refreshToken: newRefreshToken } =
-                response.data;
-
-            setTokens(accessToken, newRefreshToken);
-
-            return accessToken;
-        } catch (error) {
-            await logout();
-            throw new Error("Session expired");
-        }
-    };
-
     const setTokens = (accessToken: string, refreshToken: string) => {
         localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("refreshToken", refreshToken);
@@ -164,7 +142,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
     const verifyUser = async (accessToken: string) => {
         try {
-            const response = await serverApi.get("/auth/verify", {
+            const response = await api.get(`${authUri}/verify`, {
                 headers: { Authorization: `Bearer ${accessToken}` },
             });
             setUser(response.data.user);
@@ -179,7 +157,6 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         register,
         login,
         logout,
-        refreshAccessToken,
         loginWithGoogle,
     };
 

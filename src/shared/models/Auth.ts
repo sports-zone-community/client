@@ -26,7 +26,6 @@ export interface AuthContextType {
     isLoading: boolean;
     login: (data: LoginAxiosRequest) => Promise<void>;
     register: (data: RegisterAxiosRequest) => Promise<void>;
-    refreshAccessToken: () => Promise<string>;
     loginWithGoogle: () => void;
     logout: () => Promise<void>;
 }
