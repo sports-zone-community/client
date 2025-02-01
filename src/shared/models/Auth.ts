@@ -1,7 +1,7 @@
 import { User } from "./User.ts";
 
 export interface RegisterAxiosRequest {
-    fullName: string;
+    name: string;
     username: string;
     email: string;
     password: string;
@@ -26,7 +26,6 @@ export interface AuthContextType {
     isLoading: boolean;
     login: (data: LoginAxiosRequest) => Promise<void>;
     register: (data: RegisterAxiosRequest) => Promise<void>;
-    refreshAccessToken: () => Promise<string>;
     loginWithGoogle: () => void;
     logout: () => Promise<void>;
 }

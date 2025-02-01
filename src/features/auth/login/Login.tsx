@@ -1,9 +1,9 @@
-import googleSvg from "../../../assets/google.svg";
 import fansImage from "../../../assets/fans-charring.png";
-import AuthIcon from "../../../components/auth/AuthIcon.tsx";
 import { Link } from "react-router-dom";
 import LoginForm from "./LoginForm.tsx";
 import { useAuth } from "../../../shared/hooks/useAuth.ts";
+import AuthIcon from "../../../components/auth/AuthIcon.tsx";
+import googleSvg from "../../../assets/google.svg";
 
 const Login = () => {
     const { loginWithGoogle } = useAuth();
@@ -16,7 +16,7 @@ const Login = () => {
                     <div className="flex flex-row gap-4 w-full h-12">
                         <AuthIcon
                             icon={googleSvg}
-                            title="Google"
+                            title="Login With Google"
                             onClick={loginWithGoogle}
                         />
                     </div>
