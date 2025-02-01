@@ -21,6 +21,9 @@ export default {
                 rubik: ["Rubik", "sans-serif"],
                 montserrat: ["Montserrat", "sans-serif"],
             },
+            animation: {
+                "spin-reverse": "spin 1.5s linear infinite reverse",
+            },
         },
     },
     plugins: [],
