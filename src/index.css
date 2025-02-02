@@ -36,3 +36,32 @@ body {
 .hover {
     @apply cursor-pointer hover:bg-blue-700 transition duration-300 ease-in-out;
 }
+
+/* Custom Toast Animations */
+@keyframes toast-in-right {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.Toastify__toast {
+  animation: toast-in-right 0.3s ease-in-out forwards !important;
+}
+
+.Toastify__toast-body {
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.Toastify__close-button {
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.Toastify__close-button:hover {
+  opacity: 1;
+}
