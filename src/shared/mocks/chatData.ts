@@ -1,4 +1,4 @@
-import { Chat, Message } from '../models/Chat';
+import { Chat, Message } from '../models';
 
 export const mockChats: Chat[] = [
     {

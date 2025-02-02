@@ -3,12 +3,13 @@ import { mockChats, mockMessages } from '../../shared/mocks/chatData';
 import ChatSidebar from '../../components/chat/ChatSidebar';
 import ChatHeader from '../../components/chat/ChatHeader';
 import ChatMessage from '../../components/chat/ChatMessage';
-import { IoSendSharp } from "react-icons/io5";
-import { Chat, Message } from '../../shared/models/Chat';
+import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
+import { Chat, Message } from '../../shared/models';
+import { ChatFilter } from '../../shared/enums/ChatFilter';
 
 const Inbox: React.FC = () => {
     const [selectedChat, setSelectedChat] = useState<string | null>(null);
-    const [chatFilter, setChatFilter] = useState<'direct' | 'groups'>('direct');
+    const [chatFilter, setChatFilter] = useState<ChatFilter>(ChatFilter.DIRECT);
     const [searchTerm, setSearchTerm] = useState('');
     const [messageInput, setMessageInput] = useState('');
     const [currentMessages, setCurrentMessages] = useState<Message[]>([]);
@@ -87,7 +88,7 @@ const Inbox: React.FC = () => {
                 chatFilter={chatFilter}
                 searchTerm={searchTerm}
                 selectedChat={selectedChat}
-                onFilterChange={() => setChatFilter(prev => prev === 'direct' ? 'groups' : 'direct')}
+                onFilterChange={() => setChatFilter(prev => prev === ChatFilter.DIRECT ? ChatFilter.GROUPS : ChatFilter.DIRECT)}
                 onSearchChange={setSearchTerm}
                 onChatSelect={handleChatSelect}
                 chats={filteredChats}
@@ -123,7 +124,7 @@ const Inbox: React.FC = () => {
                                     onClick={handleSendMessage}
                                     className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700"
                                 >
-                                    <IoSendSharp />
+                                    <PaperAirplaneIcon className="w-6 h-6" />
                                 </button>
                             </div>
                         </div>

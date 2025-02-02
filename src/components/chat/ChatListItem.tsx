@@ -1,4 +1,4 @@
-import { Chat } from '../../shared/models/Chat';
+import { Chat } from '../../shared/models/chat/Chat';
 
 interface ChatListItemProps {
     chat: Chat;

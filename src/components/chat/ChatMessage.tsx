@@ -1,4 +1,4 @@
-import { Message } from '../../shared/models/Chat';
+import { Message } from '../../shared/models/chat/Chat';
 
 interface ChatMessageProps {
     message: Message;

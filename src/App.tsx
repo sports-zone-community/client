@@ -14,6 +14,8 @@ import Profile from "./pages/profile/profile.tsx";
 import AddGroup from "./pages/addGroup/addGroup.tsx";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import AuthenticatedLayout from "./components/layout/AuthenticatedLayout.tsx";
+import { configToast } from "./shared/functions/toastConfig.ts";
 
 const App = () => {
     return (
@@ -22,9 +24,7 @@ const App = () => {
                 position="top-center"
                 theme="light"
                 className="!transform-gpu"
-                toastClassName={() =>
-                    'relative flex p-4 min-h-[64px] rounded-xl justify-between overflow-hidden cursor-pointer bg-white m-2 shadow-lg max-w-sm mx-auto transition-all duration-300 ease-out'
-                }
+                toastClassName={configToast}
             />
             <BrowserRouter>
                 <AuthProvider>
@@ -37,15 +37,17 @@ const App = () => {
                                 path="/dashboard"
                                 element={
                                     <ProtectedRoute>
-                                        <Dashboard />
+                                        <AuthenticatedLayout>
+                                            <Dashboard />
+                                        </AuthenticatedLayout>
                                     </ProtectedRoute>
                                 }
                             />
-                            <Route path="/inbox" element={<ProtectedRoute><Inbox /></ProtectedRoute>} />
-                            <Route path="/explore" element={<ProtectedRoute><Explore /></ProtectedRoute>} />
-                            <Route path="/add-post" element={<ProtectedRoute><AddPost /></ProtectedRoute>} />
-                            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                            <Route path="/add-group" element={<ProtectedRoute><AddGroup /></ProtectedRoute>} />
+                            <Route path="/inbox" element={<ProtectedRoute><AuthenticatedLayout><Inbox /></AuthenticatedLayout></ProtectedRoute>} />
+                            <Route path="/explore" element={<ProtectedRoute><AuthenticatedLayout><Explore /></AuthenticatedLayout></ProtectedRoute>} />
+                            <Route path="/add-post" element={<ProtectedRoute><AuthenticatedLayout><AddPost /></AuthenticatedLayout></ProtectedRoute>} />
+                            <Route path="/profile" element={<ProtectedRoute><AuthenticatedLayout><Profile /></AuthenticatedLayout></ProtectedRoute>} />
+                            <Route path="/add-group" element={<ProtectedRoute><AuthenticatedLayout><AddGroup /></AuthenticatedLayout></ProtectedRoute>} />
                         </Routes>
                     </Layout>
                 </AuthProvider>

@@ -1,6 +1,6 @@
 import { IoIosArrowDown } from "react-icons/io";
 import { IoSearchOutline } from "react-icons/io5";
-import { Chat } from '../../shared/models/Chat';
+import { Chat } from '../../shared/models/chat/Chat';
 import ChatListItem from './ChatListItem';
 
 interface ChatSidebarProps {

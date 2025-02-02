@@ -1,11 +1,12 @@
 import { useForm } from 'react-hook-form';
-import { IoMdCloudUpload } from 'react-icons/io';
-import { FaUsers, FaRunning } from 'react-icons/fa';
+import { CloudArrowUpIcon, UserGroupIcon, UserIcon } from "@heroicons/react/24/outline";
 import { motion } from 'framer-motion';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { ToastContent } from '../../components/toastContent/toastContent';
+import { ToastType } from '../../shared/enums/ToastType';
 
 const createGroupSchema = z.object({
   name: z.string()
@@ -30,23 +31,11 @@ const CreateGroup = () => {
   const navigate = useNavigate();
 
   const onSubmitForm = (data: FormInputs) => {
-    const formData: FormData = new FormData();
-    formData.append('name', data.name);
-    formData.append('description', data.description);
-    if (data.image?.[0]) {
-      formData.append('image', data.image[0]);
-    }
+    // TODO: Add group to database
+    console.log(data);
 
     toast.success(
-      <div className="flex flex-col items-center space-y-2">
-        <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mb-2">
-          <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        <h3 className="text-lg font-semibold text-gray-800">Group created successfully!</h3>
-        <p className="text-sm text-gray-600">Redirecting to dashboard...</p>
-      </div>,
+      <ToastContent message="Group created successfully!" description="Redirecting to dashboard..." type={ToastType.SUCCESS} />,
       {
         position: "top-center",
         autoClose: 3000,
@@ -71,14 +60,14 @@ const CreateGroup = () => {
       >
         <div className="p-6 sm:p-8">
           <div className="flex items-center justify-center space-x-2 mb-8">
-            <FaUsers className="text-3xl text-blue-500" />
+            <UserGroupIcon className="h-8 w-8 text-blue-500" />
             <h1 className="text-3xl font-bold text-gray-100">Create Group</h1>
           </div>
 
           <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-6">
             <div className="space-y-2">
               <label className="flex items-center text-lg font-medium text-gray-300">
-                <FaRunning className="mr-2" />
+                <UserIcon className="h-5 w-5 mr-2" />
                 Group Name
               </label>
               <input
@@ -125,7 +114,7 @@ const CreateGroup = () => {
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <IoMdCloudUpload className="mx-auto h-16 w-16 text-blue-400" />
+                      <CloudArrowUpIcon className="mx-auto h-16 w-16 text-blue-400" />
                       <p className="mt-2 text-sm text-gray-400">Click to upload group image</p>
                       <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 10MB</p>
                     </div>

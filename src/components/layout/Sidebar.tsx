@@ -1,6 +1,5 @@
 import { Link, useLocation, useNavigate, NavigateFunction } from "react-router-dom";
-import { FiLogOut } from "react-icons/fi";
-
+import { ArrowRightOnRectangleIcon } from "@heroicons/react/20/solid";
 import { useAuth } from "../../shared/hooks/useAuth";
 import { navItems } from "../../shared/consts/NavItems";
 import { NavItem } from "../../shared/models/NavItem";
@@ -40,7 +39,7 @@ const Sidebar = () => {
                                         : "text-gray-300 hover:bg-gray-800"
                                 }`}
                             >
-                                <Icon className="text-2xl" />
+                                <Icon className="h-6 w-6" aria-hidden="true" />
                                 <span>{item.name}</span>
                             </Link>
                         );
@@ -51,7 +50,7 @@ const Sidebar = () => {
                 onClick={handleLogout}
                 className="flex items-center space-x-3 p-3 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors mt-auto"
             >
-                <FiLogOut className="text-2xl" />
+                <ArrowRightOnRectangleIcon className="h-6 w-6" aria-hidden="true" />
                 <span>Log out</span>
             </button>
         </div>

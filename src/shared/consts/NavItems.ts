@@ -1,13 +1,17 @@
-import { MdAddCircle, MdExplore, MdGroupAdd, MdInbox } from "react-icons/md";
-import { AiFillHome } from "react-icons/ai";
-import { CgProfile } from "react-icons/cg";
-import { NavItem } from "../models/NavItem";
+import { 
+    HomeIcon,
+    InboxIcon,
+    MagnifyingGlassIcon,
+    PlusCircleIcon,
+    UserIcon,
+    UserGroupIcon
+} from "@heroicons/react/20/solid";
 
-export const navItems: NavItem[] = [
-    { name: "Home", path: "/dashboard", icon: AiFillHome },
-    { name: "Inbox", path: "/inbox", icon: MdInbox },
-    { name: "Explore", path: "/explore", icon: MdExplore },
-    { name: "Add Post", path: "/add-post", icon: MdAddCircle },
-    { name: "Profile", path: "/profile", icon: CgProfile },
-    { name: "Add Group", path: "/add-group", icon: MdGroupAdd },
+export const navItems = [
+    { name: "Dashboard", path: "/dashboard", icon: HomeIcon },
+    { name: "Inbox", path: "/inbox", icon: InboxIcon },
+    { name: "Explore", path: "/explore", icon: MagnifyingGlassIcon },
+    { name: "Add Post", path: "/add-post", icon: PlusCircleIcon },
+    { name: "Profile", path: "/profile", icon: UserIcon },
+    { name: "Add Group", path: "/add-group", icon: UserGroupIcon },
 ];
