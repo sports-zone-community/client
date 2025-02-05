@@ -60,7 +60,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         try {
             await api.post<RegisterAxiosResponse>(`${authUri}/register`, data);
             setPopup("Registration successful. You can now login");
-        } catch (error: any) {
+        } catch (error) {
             setPopup("Registration failed. Please try again");
             console.error(`Registration Failed: ${getErrorMessage(error)}`);
         } finally {
@@ -81,7 +81,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
             await verifyUser(accessToken);
 
             navigate("/dashboard");
-        } catch (error: any) {
+        } catch (error) {
             console.error(`Login Failed: ${getErrorMessage(error)}`);
             setPopup("Login failed. Please try again");
         } finally {
