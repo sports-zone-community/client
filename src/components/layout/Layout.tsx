@@ -1,15 +1,14 @@
-import CoolBlur from "./CoolBlur.tsx";
-import * as React from "react";
-
 interface LayoutProps {
     children: React.ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const Layout = ({ children }: LayoutProps) => {
+
     return (
-        <div className="bg-blue-950 min-h-screen flex flex-col">
-            <CoolBlur />
-            {children}
+        <div className="bg-blue-950 min-h-screen flex">
+            <div className="flex-1 relative">
+                {children}
+            </div>
         </div>
     );
 };
