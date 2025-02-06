@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from "react";
-import { User } from "../../../shared/models/User.ts";
+import { UserModel } from "../../../shared/models/User.ts";
 import api from "../../api/api.ts";
 import {
     AuthContextType,
@@ -21,7 +21,7 @@ interface AuthProviderProps {
 }
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<UserModel | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [popupMessage, setPopup] = useState<string>("");
     const navigate = useNavigate();
