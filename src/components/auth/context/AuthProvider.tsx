@@ -1,13 +1,13 @@
 import { ReactNode, useEffect, useState } from "react";
-import { UserModel } from "../../../shared/models/User.ts";
-import api from "../../../features/api/api.ts";
 import {
     AuthContextType,
     LoginAxiosRequest,
     LoginAxiosResponse,
     RegisterAxiosRequest,
     RegisterAxiosResponse,
-} from "../../../shared/models/Auth.ts";
+    UserModel,
+} from "../../../shared/models";
+import api from "../../../features/api/api.ts";
 import axios, { AxiosResponse } from "axios";
 import AuthContext from "./AuthContext.tsx";
 import { useGoogleLogin } from "@react-oauth/google";
