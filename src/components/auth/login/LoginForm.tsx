@@ -1,4 +1,4 @@
-import CustomInput from "../../../components/auth/CustomInput.tsx";
+import CustomInput from "../CustomInput.tsx";
 import { InputType } from "../../../shared/enums/input-type.enum.ts";
 import { z } from "zod";
 import { useForm } from "react-hook-form";

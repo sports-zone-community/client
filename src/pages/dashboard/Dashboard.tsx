@@ -1,4 +1,4 @@
-import Post from "../post/Post.tsx";
+import Post from "../../components/post/Post.tsx";
 import { fetchPosts } from "../../features/api/posts.ts";
 import { fetchCommentsByPostId } from "../../features/api/comments.ts";
 import { fetchUserById } from "../../features/api/user.ts";
@@ -40,9 +40,18 @@ const Dashboard = () => {
                 dataLength={posts.length}
                 next={loadMorePosts}
                 hasMore={hasMore}
-                loader={<h4>Loading...</h4>}
+                loader={
+                    <div className="w-full text-center py-4">
+                        <h4 className="text-white">Loading...</h4>
+                    </div>
+                }
                 scrollThreshold={0.9}
-                endMessage={<p>No more posts to show.</p>}
+                endMessage={
+                    <div className="w-full text-center py-4">
+                        <p className="text-white">No more posts to show.</p>
+                    </div>
+                }
+                scrollableTarget="scrollableDiv"
             >
                 <div className="flex flex-col gap-8 items-center">
                     {posts.map((post) => (
