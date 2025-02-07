@@ -2,7 +2,7 @@ import fansImage from "../../../assets/fans-charring.png";
 import { Link } from "react-router-dom";
 import LoginForm from "./LoginForm.tsx";
 import { useAuth } from "../../../shared/hooks/useAuth.ts";
-import AuthIcon from "../../../components/auth/AuthIcon.tsx";
+import AuthIcon from "../AuthIcon.tsx";
 import googleSvg from "../../../assets/google.svg";
 
 const Login = () => {

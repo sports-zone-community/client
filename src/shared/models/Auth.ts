@@ -1,4 +1,4 @@
-import { User } from "./User.ts";
+import { UserModel } from "./User.ts";
 
 export interface RegisterAxiosRequest {
     name: string;
@@ -22,7 +22,7 @@ export interface LoginAxiosResponse {
 }
 
 export interface AuthContextType {
-    user: User | null;
+    user: UserModel | null;
     isLoading: boolean;
     login: (data: LoginAxiosRequest) => Promise<void>;
     register: (data: RegisterAxiosRequest) => Promise<void>;

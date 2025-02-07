@@ -1,17 +1,17 @@
 import { ReactNode, useEffect, useState } from "react";
-import { User } from "../../../shared/models/User.ts";
-import api from "../../api/api.ts";
 import {
     AuthContextType,
     LoginAxiosRequest,
     LoginAxiosResponse,
     RegisterAxiosRequest,
     RegisterAxiosResponse,
-} from "../../../shared/models/Auth.ts";
+    UserModel,
+} from "../../../shared/models";
+import api from "../../../features/api/api.ts";
 import axios, { AxiosResponse } from "axios";
 import AuthContext from "./AuthContext.tsx";
 import { useGoogleLogin } from "@react-oauth/google";
-import Popup from "../../../components/common/Popup.tsx";
+import Popup from "../../common/Popup.tsx";
 import { useNavigate } from "react-router-dom";
 import { config } from "../../../config.ts";
 import { setTokens } from "../../../shared/utils/auth.utils.ts";
@@ -21,7 +21,7 @@ interface AuthProviderProps {
 }
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<UserModel | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [popupMessage, setPopup] = useState<string>("");
     const navigate = useNavigate();

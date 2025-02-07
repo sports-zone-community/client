@@ -1,21 +1,35 @@
 import "./App.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Login from "./features/auth/login/Login.tsx";
-import Layout from "./components/layout/Layout.tsx";
-import Home from "./components/home/Home.tsx";
-import Register from "./features/auth/register/Register.tsx";
-import AuthProvider from "./features/auth/context/AuthProvider.tsx";
-import Dashboard from "./components/dashboard/Dashboard.tsx";
-import ProtectedRoute from "./features/auth/route/ProtectedRoute.tsx";
-import Inbox from "./pages/inbox/inbox.tsx";
-import AddPost from "./pages/addPost/addPost.tsx";
-import Explore from "./pages/explore/explore.tsx";
-import Profile from "./pages/profile/profile.tsx";
-import AddGroup from "./pages/addGroup/addGroup.tsx";
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import AuthenticatedLayout from "./components/layout/AuthenticatedLayout.tsx";
-import { configToast } from "./shared/functions/toastConfig.ts";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Layout from "./components/layout/Layout";
+import Login from "./components/auth/login/Login";
+import Register from "./components/auth/register/Register";
+import AuthProvider from "./components/auth/context/AuthProvider";
+import ProtectedRoute from "./components/auth/route/ProtectedRoute";
+import Home from "./components/home/Home";
+import Dashboard from "./pages/dashboard/Dashboard";
+import Inbox from "./pages/inbox/Inbox";
+import AddPost from "./pages/addPost/AddPost";
+import Profile from "./pages/profile/Profile";
+import AddGroup from "./pages/addGroup/AddGroup";
+import { configToast } from "./shared/functions/toastConfig";
+import Explore from "./pages/explore/Explore";
+
+const publicRoutes = [
+    { path: "/", element: <Home /> },
+    { path: "/login", element: <Login /> },
+    { path: "/register", element: <Register /> },
+];
+
+const protectedRoutes = [
+    { path: "/dashboard", element: <Dashboard /> },
+    { path: "/inbox", element: <Inbox /> },
+    { path: "/explore", element: <Explore /> },
+    { path: "/add-post", element: <AddPost /> },
+    { path: "/profile", element: <Profile /> },
+    { path: "/add-group", element: <AddGroup /> },
+];
 
 const App = () => {
     return (
@@ -30,24 +44,27 @@ const App = () => {
                 <AuthProvider>
                     <Layout>
                         <Routes>
-                            <Route path="/" element={<Home />} />
-                            <Route path="/login" element={<Login />} />
-                            <Route path="/register" element={<Register />} />
-                            <Route
-                                path="/dashboard"
-                                element={
-                                    <ProtectedRoute>
-                                        <AuthenticatedLayout>
-                                            <Dashboard />
-                                        </AuthenticatedLayout>
-                                    </ProtectedRoute>
-                                }
-                            />
-                            <Route path="/inbox" element={<ProtectedRoute><AuthenticatedLayout><Inbox /></AuthenticatedLayout></ProtectedRoute>} />
-                            <Route path="/explore" element={<ProtectedRoute><AuthenticatedLayout><Explore /></AuthenticatedLayout></ProtectedRoute>} />
-                            <Route path="/add-post" element={<ProtectedRoute><AuthenticatedLayout><AddPost /></AuthenticatedLayout></ProtectedRoute>} />
-                            <Route path="/profile" element={<ProtectedRoute><AuthenticatedLayout><Profile /></AuthenticatedLayout></ProtectedRoute>} />
-                            <Route path="/add-group" element={<ProtectedRoute><AuthenticatedLayout><AddGroup /></AuthenticatedLayout></ProtectedRoute>} />
+                            {/* Public Routes */}
+                            {publicRoutes.map(({ path, element }) => (
+                                <Route
+                                    key={path}
+                                    path={path}
+                                    element={element}
+                                />
+                            ))}
+
+                            {/* Protected Routes */}
+                            {protectedRoutes.map(({ path, element }) => (
+                                <Route
+                                    key={path}
+                                    path={path}
+                                    element={
+                                        <ProtectedRoute>
+                                            {element}
+                                        </ProtectedRoute>
+                                    }
+                                />
+                            ))}
                         </Routes>
                     </Layout>
                 </AuthProvider>
