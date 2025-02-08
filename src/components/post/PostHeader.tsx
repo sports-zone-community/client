@@ -1,4 +1,5 @@
 import { getTimeElapsed } from "../../shared/utils/post.utils.ts";
+import { config } from "../../config.ts";
 
 export interface PostHeaderProps {
     userImage: string;
@@ -10,7 +11,7 @@ const PostHeader = ({ userImage, username, createdAt }: PostHeaderProps) => {
     return (
         <div className="w-full h-8 gap-2 flex flex-row">
             <img
-                src={userImage}
+                src={`${config.apiUrl}/${userImage}`}
                 alt="user-icon"
                 className="w-8 h-8 rounded-full"
             />

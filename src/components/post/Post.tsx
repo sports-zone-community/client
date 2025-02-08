@@ -2,6 +2,7 @@ import { PostPreview } from "../../shared/models/Post";
 import PostActions from "./PostActions.tsx";
 import PostHeader from "./PostHeader.tsx";
 import PostContent from "./PostContent.tsx";
+import { config } from "../../config.ts";
 
 export interface PostProps {
     post: PostPreview;
@@ -17,7 +18,7 @@ const PostComponent = ({ post }: PostProps) => {
             />
             <div className="w-full h-52 rounded">
                 <img
-                    src={post.image}
+                    src={`${config.apiUrl}/${post.image}`}
                     alt="post-image"
                     className="w-full h-full object-cover rounded"
                 />

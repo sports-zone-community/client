@@ -27,8 +27,8 @@ const protectedRoutes = [
     { path: "/inbox", element: <Inbox /> },
     { path: "/explore", element: <Explore /> },
     { path: "/add-post", element: <AddPost /> },
-    { path: "/profile", element: <Profile /> },
     { path: "/add-group", element: <AddGroup /> },
+    { path: "/profile", element: <Profile /> },
 ];
 
 const App = () => {

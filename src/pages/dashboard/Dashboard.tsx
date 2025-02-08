@@ -1,7 +1,5 @@
 import Post from "../../components/post/Post.tsx";
-import { fetchPosts } from "../../features/api/posts.ts";
-import { fetchCommentsByPostId } from "../../features/api/comments.ts";
-import { fetchUserById } from "../../features/api/user.ts";
+import { fetchPostsWithAdditionalData } from "../../features/api/posts.ts";
 import { PostPreview } from "../../shared/models/Post.ts";
 import { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -12,21 +10,13 @@ const Dashboard = () => {
     const [hasMore, setHasMore] = useState(true);
 
     const loadMorePosts = async () => {
-        const newPosts = await fetchPosts(page);
-        if (newPosts.length === 0) {
+        const newPosts = await fetchPostsWithAdditionalData(page);
+        if (newPosts.length === 0 || newPosts.length < 5) {
             setHasMore(false);
             return;
         }
 
-        const postsWithAdditionalData = await Promise.all(
-            newPosts.map(async (post) => {
-                const comments = await fetchCommentsByPostId(post._id);
-                const { username, picture } = await fetchUserById(post.userId);
-                return { ...post, comments, username, userImage: picture };
-            })
-        );
-
-        setPosts((prevPosts) => [...prevPosts, ...postsWithAdditionalData]);
+        setPosts((prevPosts) => [...prevPosts, ...newPosts]);
         setPage((prevPage) => prevPage + 1);
     };
 

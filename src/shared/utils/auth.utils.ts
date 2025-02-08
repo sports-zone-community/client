@@ -1,7 +1,3 @@
-import axios from "axios";
-
-export const setTokens = (accessToken: string, refreshToken: string) => {
+export const setToken = (accessToken: string) => {
     localStorage.setItem("accessToken", accessToken);
-    localStorage.setItem("refreshToken", refreshToken);
-    axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 };

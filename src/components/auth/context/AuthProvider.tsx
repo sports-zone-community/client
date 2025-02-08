@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useCallback, useEffect, useState } from "react";
 import {
     AuthContextType,
     LoginAxiosRequest,
@@ -7,14 +7,14 @@ import {
     RegisterAxiosResponse,
     UserModel,
 } from "../../../shared/models";
-import api from "../../../features/api/api.ts";
-import axios, { AxiosResponse } from "axios";
+import api, { setRefreshTokenMethod } from "../../../features/api/api.ts";
+import { AxiosResponse } from "axios";
 import AuthContext from "./AuthContext.tsx";
 import { useGoogleLogin } from "@react-oauth/google";
 import Popup from "../../common/Popup.tsx";
 import { useNavigate } from "react-router-dom";
 import { config } from "../../../config.ts";
-import { setTokens } from "../../../shared/utils/auth.utils.ts";
+import { setToken } from "../../../shared/utils/auth.utils.ts";
 
 interface AuthProviderProps {
     children: ReactNode;
@@ -29,18 +29,9 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
     useEffect(() => {
         const initAuth = async () => {
-            const accessToken: string | null =
-                localStorage.getItem("accessToken");
-            if (accessToken) {
-                try {
-                    await verifyUser(accessToken);
-                    navigate("/dashboard");
-                } catch (error) {
-                    localStorage.removeItem("accessToken");
-                    localStorage.removeItem("refreshToken");
-                }
-            }
+            await verifyUser();
             setIsLoading(false);
+            navigate("/dashboard");
         };
 
         initAuth();
@@ -75,10 +66,10 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
             const response: AxiosResponse<LoginAxiosResponse> =
                 await api.post<LoginAxiosResponse>(`${authUri}/login`, data);
 
-            const { accessToken, refreshToken } = response.data;
-            setTokens(accessToken, refreshToken);
+            const { accessToken } = response.data;
+            setToken(accessToken);
 
-            await verifyUser(accessToken);
+            await verifyUser();
 
             navigate("/dashboard");
         } catch (error) {
@@ -98,10 +89,10 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
                         access_token,
                     });
 
-                const { accessToken, refreshToken } = response.data;
+                const { accessToken } = response.data;
 
-                setTokens(accessToken, refreshToken);
-                await verifyUser(accessToken);
+                setToken(accessToken);
+                await verifyUser();
                 navigate("/dashboard");
             } catch (error) {
                 console.error("Google login failed:", getErrorMessage(error));
@@ -128,22 +119,37 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
             console.error("Logout failed:", error);
         } finally {
             localStorage.removeItem("accessToken");
-            localStorage.removeItem("refreshToken");
             setUser(null);
-            delete axios.defaults.headers.common["Authorization"];
         }
     };
 
-    const verifyUser = async (accessToken: string) => {
+    const verifyUser = async () => {
         try {
-            const response = await api.get(`${authUri}/verify`, {
-                headers: { Authorization: `Bearer ${accessToken}` },
-            });
-            setUser(response.data.user);
+            const response = await api.get<UserModel>(`${authUri}/verify`);
+            setUser(response.data);
         } catch (error) {
             console.error("Verify user failed:", error);
+            localStorage.removeItem("accessToken");
         }
     };
+
+    const refreshToken = useCallback(async (): Promise<void> => {
+        try {
+            const response = await api.post<LoginAxiosResponse>(
+                `${config.authUri}/refreshToken`
+            );
+
+            const { accessToken } = response.data;
+            setToken(accessToken);
+        } catch (error: any) {
+            console.error(`Refresh token failed: ${error.message}`);
+            logout();
+        }
+    }, []);
+
+    useEffect(() => {
+        setRefreshTokenMethod(refreshToken);
+    }, [refreshToken]);
 
     const value: AuthContextType = {
         user,
@@ -152,6 +158,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         login,
         logout,
         loginWithGoogle,
+        refreshToken,
     };
 
     return (
