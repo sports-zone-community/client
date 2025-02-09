@@ -34,7 +34,7 @@ const Sidebar = () => {
                     <img
                         src={Logo}
                         alt="SportsZone"
-                        className="w-18 h-14 rounded-full"
+                        className="h-24 rounded-full"
                     />
                 </div>
                 <nav className="space-y-2">

@@ -13,7 +13,7 @@ const Dashboard = () => {
         const newPosts = await fetchPostsWithAdditionalData(page);
         if (newPosts.length === 0 || newPosts.length < 5) {
             setHasMore(false);
-            return;
+            if (newPosts.length === 0) return;
         }
 
         setPosts((prevPosts) => [...prevPosts, ...newPosts]);
@@ -38,7 +38,7 @@ const Dashboard = () => {
                 scrollThreshold={0.9}
                 endMessage={
                     <div className="w-full text-center py-4">
-                        <p className="text-white">No more posts to show.</p>
+                        <p className="text-white">No more posts to show</p>
                     </div>
                 }
                 scrollableTarget="scrollableDiv"
