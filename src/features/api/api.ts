@@ -1,35 +1,17 @@
 import axios, { AxiosInstance, HttpStatusCode } from "axios";
 import { config } from "../../config.ts";
-import { LoginAxiosResponse } from "../../shared/models/Auth.ts";
-import { setTokens } from "../../shared/utils/auth.utils.ts";
+
+let refreshTokenMethod: (() => Promise<void>) | undefined = undefined;
+
+export const setRefreshTokenMethod = (method: () => Promise<void>) => {
+    refreshTokenMethod = method;
+};
 
 const api: AxiosInstance = axios.create({
     baseURL: config.apiUrl,
     withCredentials: true,
     validateStatus: (status) => status >= 200 && status < 300,
 });
-
-const refreshToken = async (): Promise<string | undefined> => {
-    try {
-        const refreshToken: string | null =
-            localStorage.getItem("refreshToken");
-        const response = await api.post<LoginAxiosResponse>(
-            `${config.authUri}/refreshToken`,
-            null,
-            {
-                headers: { Authorization: `Bearer ${refreshToken}` },
-            }
-        );
-
-        const { accessToken, refreshToken: newRefreshToken } = response.data;
-
-        setTokens(accessToken, newRefreshToken);
-
-        return accessToken;
-    } catch (error: any) {
-        console.error(`Refresh token failed: ${error.message}`);
-    }
-};
 
 api.interceptors.request.use(
     (config) => {
@@ -55,16 +37,22 @@ api.interceptors.response.use(
         ) {
             originalRequest._retry = true;
 
-            if (originalRequest.url === `${config.authUri}/refreshToken`) {
+            if (shouldNotRetry(originalRequest.url)) {
                 return Promise.reject(error);
             }
 
-            const newToken: string | undefined = await refreshToken();
-            error.config.headers.Authorization = `Bearer ${newToken}`;
+            if (refreshTokenMethod) {
+                await refreshTokenMethod();
+            } else {
+                return Promise.reject("Refresh token method not set");
+            }
             return api(originalRequest);
         }
         return Promise.reject(error);
     }
 );
+
+const shouldNotRetry = (url: string) =>
+    url.includes(config.authUri) && !url.includes("verify");
 
 export default api;

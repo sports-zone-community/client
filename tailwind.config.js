@@ -5,6 +5,7 @@ export default {
         extend: {
             width: {
                 104: "26rem",
+                120: "30rem",
             },
             borderRadius: {
                 "4xl": "2rem",

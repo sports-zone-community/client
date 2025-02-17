@@ -18,7 +18,6 @@ export interface LoginAxiosRequest {
 
 export interface LoginAxiosResponse {
     accessToken: string;
-    refreshToken: string;
 }
 
 export interface AuthContextType {
@@ -28,4 +27,5 @@ export interface AuthContextType {
     register: (data: RegisterAxiosRequest) => Promise<void>;
     loginWithGoogle: () => void;
     logout: () => Promise<void>;
+    refreshToken?: () => Promise<void>;
 }
