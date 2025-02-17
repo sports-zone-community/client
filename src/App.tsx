@@ -1,6 +1,5 @@
 import './App.css';
 import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom';
-// import 'react-toastify/dist/ReactToastify.css';
 import Layout from './components/layout/Layout';
 import Login from './components/auth/login/Login';
 import Register from './components/auth/register/Register';
