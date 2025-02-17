@@ -1,5 +1,5 @@
 import './App.css';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom';
 // import 'react-toastify/dist/ReactToastify.css';
 import Layout from './components/layout/Layout';
 import Login from './components/auth/login/Login';
@@ -14,6 +14,8 @@ import Profile from './pages/profile/Profile';
 import AddGroup from './pages/add-group/AddGroup';
 import Explore from './pages/explore/Explore';
 import { Bounce, ToastContainer } from 'react-toastify';
+import EditPost from './pages/edit-post/EditPost.tsx';
+import { PostsProvider } from './components/post/context/PostsProvider.tsx';
 
 const publicRoutes = [
   { path: '/', element: <Home /> },
@@ -26,6 +28,7 @@ const protectedRoutes = [
   { path: '/inbox', element: <Inbox /> },
   { path: '/explore', element: <Explore /> },
   { path: '/add-post', element: <AddPost /> },
+  { path: '/edit-post/:postId', element: <EditPost /> },
   { path: '/add-group', element: <AddGroup /> },
   { path: '/profile', element: <Profile /> },
 ];
@@ -46,19 +49,23 @@ const App = () => {
         <AuthProvider>
           <Layout>
             <Routes>
-              {/* Public Routes */}
               {publicRoutes.map(({ path, element }) => (
                 <Route key={path} path={path} element={element} />
               ))}
 
-              {/* Protected Routes */}
-              {protectedRoutes.map(({ path, element }) => (
-                <Route
-                  key={path}
-                  path={path}
-                  element={<ProtectedRoute>{element}</ProtectedRoute>}
-                />
-              ))}
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <PostsProvider>
+                      <Outlet />
+                    </PostsProvider>
+                  </ProtectedRoute>
+                }
+              >
+                {protectedRoutes.map(({ path, element }) => (
+                  <Route key={path} path={path} element={element} />
+                ))}
+              </Route>
             </Routes>
           </Layout>
         </AuthProvider>

@@ -1,16 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline';
-import { deletePost } from '../../features/api/posts.ts';
+import { deletePost } from '../../../features/api/posts.ts';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import { usePosts } from '../../../shared/hooks/usePosts.ts';
 
 export interface PostOptionsProps {
   postId: string;
-  removePost: (postId: string) => void;
 }
 
-const PostOptions = ({ postId, removePost }: PostOptionsProps) => {
+const PostOptions = ({ postId }: PostOptionsProps) => {
   const [showOptions, setShowOptions] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const { removePost } = usePosts();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -33,7 +36,9 @@ const PostOptions = ({ postId, removePost }: PostOptionsProps) => {
     }
   };
 
-  const handleEdit = () => {};
+  const handleEdit = () => {
+    navigate(`/edit-post/${postId}`);
+  };
 
   return (
     <div ref={popupRef} className="relative ml-auto">

@@ -1,38 +1,26 @@
 import Post from '../../components/post/Post.tsx';
-import { fetchPostsWithAdditionalData } from '../../features/api/posts.ts';
-import { PostPreview } from '../../shared/models/Post.ts';
-import { useEffect, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import { usePosts } from '../../shared/hooks/usePosts.ts';
+import { useEffect, useState } from 'react';
 
 const Dashboard = () => {
-  const [posts, setPosts] = useState<PostPreview[]>([]);
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-
-  const loadMorePosts = async () => {
-    const newPosts = await fetchPostsWithAdditionalData(page);
-    if (newPosts.length === 0 || newPosts.length < 5) {
-      setHasMore(false);
-      if (newPosts.length === 0) return;
-    }
-
-    setPosts((prevPosts) => [...prevPosts, ...newPosts]);
-    setPage((prevPage) => prevPage + 1);
-  };
+  const { posts, loadMorePosts, hasMore } = usePosts();
 
   useEffect(() => {
-    loadMorePosts();
+    loadPosts();
   }, []);
 
-  const removePost = (postId: string) => {
-    setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId));
+  const loadPosts = async () => {
+    await loadMorePosts(page);
+    setPage((prevPage) => prevPage + 1);
   };
 
   return (
     <div className="flex flex-col items-center">
       <InfiniteScroll
         dataLength={posts.length}
-        next={loadMorePosts}
+        next={loadPosts}
         hasMore={hasMore}
         loader={
           <div className="w-full text-center py-4">
@@ -49,7 +37,7 @@ const Dashboard = () => {
       >
         <div className="flex flex-col gap-8 items-center">
           {posts.map((post) => (
-            <Post key={post._id} post={post} removePost={removePost} />
+            <Post key={post._id} post={post} />
           ))}
         </div>
       </InfiniteScroll>

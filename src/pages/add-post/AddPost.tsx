@@ -5,9 +5,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'react-toastify';
 import { useState } from 'react';
 import { createPost } from '../../features/api/posts.ts';
-import ImageInput from './components/ImageInput.tsx';
-import DescriptionInput from './components/DescriptionInput.tsx';
-import GroupsInput from './components/GroupsInput.tsx';
+import ImageInput from '../../components/post/components/ImageInput.tsx';
+import DescriptionInput from '../../components/post/components/DescriptionInput.tsx';
+import GroupsInput from '../../components/post/components/GroupsInput.tsx';
 
 const addPostSchema = z.object({
   image: z.instanceof(File),

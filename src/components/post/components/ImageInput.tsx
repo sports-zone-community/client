@@ -1,12 +1,13 @@
 import { CloudArrowUpIcon } from '@heroicons/react/24/outline';
 import { FieldError, UseFormRegisterReturn, UseFormSetValue } from 'react-hook-form';
-import { AddPostFormInputs } from '../AddPost.tsx';
+import { AddPostFormInputs } from '../../../pages/add-post/AddPost.tsx';
+import { EditPostFormInputs } from '../../../pages/edit-post/EditPost.tsx';
 
 export interface ImageInputProps {
   previewImage: string | null;
   setPreviewImage: (value: string | null) => void;
   registration: UseFormRegisterReturn;
-  setValue: UseFormSetValue<AddPostFormInputs>;
+  setValue: UseFormSetValue<AddPostFormInputs | EditPostFormInputs>;
   error?: FieldError;
 }
 

@@ -40,3 +40,18 @@ export const createPost = async (image: File, content: string, groupId?: string)
 export const deletePost = async (postId: string): Promise<void> => {
   await api.delete(`/posts/${postId}`);
 };
+
+export const updatePost = async (postId: string, image?: File, content?: string): Promise<void> => {
+  const formData = new FormData();
+  if (image) {
+    formData.append('image', image);
+  }
+
+  if (content) {
+    formData.append('content', content);
+  }
+
+  await api.put<PostModel>(`/posts/${postId}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
