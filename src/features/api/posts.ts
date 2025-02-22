@@ -3,15 +3,15 @@ import { PostModel, PostPreview } from '../../shared/models/Post.ts';
 import { fetchCommentsByPostId } from './comments.ts';
 import { fetchUserById } from './user.ts';
 
-export const fetchPosts = async (page: number): Promise<PostModel[]> => {
+export const fetchPosts = async (page: number, groupId?: string): Promise<PostModel[]> => {
   const response = await api.get<PostModel[]>(`/posts/explore`, {
-    params: { page },
+    params: { page, groupId },
   });
   return response.data;
 };
 
-export const fetchPostsWithAdditionalData = async (page: number): Promise<PostPreview[]> => {
-  const newPosts = await fetchPosts(page);
+export const fetchPostsWithAdditionalData = async (page: number, groupId?: string): Promise<PostPreview[]> => {
+  const newPosts = await fetchPosts(page, groupId);
 
   return await Promise.all(
     newPosts.map(async (post) => {

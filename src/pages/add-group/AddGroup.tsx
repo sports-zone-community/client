@@ -5,45 +5,60 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { NavigateFunction } from 'react-router-dom';
 import { ToastContent } from '../../components/toastContent/toastContent';
 import { ToastType } from '../../shared/enums/ToastType';
+import { CreateGroupModel } from '../../shared/models/Group';
+import { useGroups } from '../../shared/hooks/useGroups';
+import { toastConfig } from '../../shared/functions/toastConfig';
 
 const createGroupSchema = z.object({
   name: z.string()
     .min(3, "Name must be at least 3 characters"),
   description: z.string()
-    .min(10, "Description must be at least 10 characters"),
-  image: z.instanceof(FileList)
-    .refine((files: FileList) => files.length > 0, "Group image is required")
+    .min(5, "Description must be at least 5 characters"),
+  image: z.any()
+    .refine((file) => file?.[0] instanceof File, "Group image is required")
 });
 
 type FormInputs = z.infer<typeof createGroupSchema>;
 
 const CreateGroup = () => {
+  const { createGroup } = useGroups();
   const { register, handleSubmit, formState: { errors }, watch, reset } = useForm<FormInputs>({
     resolver: zodResolver(createGroupSchema),
     mode: "onChange"
   });
 
-  const imageFile: File | null = watch('image')?.[0] as File | null;
-  const previewUrl: string = imageFile ? URL.createObjectURL(imageFile) : '';
+  const imageFile = watch('image')?.[0];
+  const previewUrl = imageFile instanceof File ? URL.createObjectURL(imageFile) : '';
 
-  const navigate = useNavigate();
+  const navigate: NavigateFunction = useNavigate();
 
-  const onSubmitForm = (data: FormInputs) => {
-    // TODO: Add group to database
-    console.log(data);
+  const onSubmitForm = async (data: FormInputs) => {
+    const { name, description, image } = data;
+    const createGroupModel: CreateGroupModel = {
+      name,
+      description,
+      image: image[0]
+    };
 
-    toast.success(
-      <ToastContent message="Group created successfully!" description="Redirecting to dashboard..." type={ToastType.SUCCESS} />,
-      {
-        position: "top-center",
-        autoClose: 3000,
-        closeOnClick: true,
-        pauseOnHover: true,
-        icon: false
-      }
-    );
+    try {
+      await createGroup(createGroupModel);
+      toast.success(
+        <ToastContent 
+          message="Group created successfully!" 
+          description="Redirecting to dashboard..." 
+          type={ToastType.SUCCESS} 
+        />,
+        toastConfig
+      );
+    } catch (error) {
+      toast.error(
+        <ToastContent message="Error creating group!" description="Please try again." type={ToastType.ERROR} />,
+        toastConfig
+      );
+    }
 
     reset();
     setTimeout(() => {
@@ -121,7 +136,7 @@ const CreateGroup = () => {
                   )}
                 </label>
                 {errors.image && (
-                  <p className="text-red-400 text-sm mt-2">{errors.image.message}</p>
+                  <p className="text-red-400 text-sm mt-2">{errors.image.message as string}</p>
                 )}
               </div>
             </div>

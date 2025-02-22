@@ -4,7 +4,7 @@ import { PostPreview } from '../../../shared/models/Post.ts';
 interface PostsContextType {
   posts: PostPreview[];
   getPostById: (postId: string) => PostPreview | undefined;
-  loadMorePosts: (page: number) => Promise<void>;
+  loadMorePosts: (page: number, groupId?: string) => Promise<void>;
   removePost: (postId: string) => void;
   hasMore: boolean;
 }

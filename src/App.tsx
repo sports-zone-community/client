@@ -12,9 +12,11 @@ import AddPost from './pages/add-post/AddPost';
 import Profile from './pages/profile/Profile';
 import AddGroup from './pages/add-group/AddGroup';
 import Explore from './pages/explore/Explore';
-import { Bounce, ToastContainer } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import EditPost from './pages/edit-post/EditPost.tsx';
 import { PostsProvider } from './components/post/context/PostsProvider.tsx';
+import { GroupsProvider } from './components/groups/context/GroupsProvider.tsx';
+import { configToast } from './shared/functions/toastConfig';
 
 const publicRoutes = [
   { path: '/', element: <Home /> },
@@ -36,14 +38,11 @@ const App = () => {
   return (
     <>
       <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        pauseOnFocusLoss={false}
-        pauseOnHover={false}
-        theme="dark"
-        transition={Bounce}
-        closeOnClick={true}
-      />
+                position="top-center"
+                theme="dark"
+                className="!transform-gpu"
+                toastClassName={configToast}
+            />
       <BrowserRouter>
         <AuthProvider>
           <Layout>
@@ -55,9 +54,11 @@ const App = () => {
               <Route
                 element={
                   <ProtectedRoute>
-                    <PostsProvider>
-                      <Outlet />
-                    </PostsProvider>
+                    <GroupsProvider>
+                      <PostsProvider>
+                        <Outlet />
+                      </PostsProvider>
+                    </GroupsProvider>
                   </ProtectedRoute>
                 }
               >
