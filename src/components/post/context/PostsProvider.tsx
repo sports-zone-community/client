@@ -7,17 +7,21 @@ export const PostsProvider = ({ children }: { children: ReactNode }) => {
   const [posts, setPosts] = useState<PostPreview[]>([]);
   const [hasMore, setHasMore] = useState(true);
 
-  const loadMorePosts = async (page: number) => {
-    const newPosts = await fetchPostsWithAdditionalData(page);
+  const loadMorePosts = async (page: number, groupId?: string) => {
+    const newPosts = await fetchPostsWithAdditionalData(page, groupId);
+    
+    if (page === 1) {
+      setPosts(newPosts);
+      setHasMore(newPosts.length === 5);
+      return;
+    }
+    
     if (newPosts.length === 0 || newPosts.length < 5) {
       setHasMore(false);
       if (newPosts.length === 0) return;
     }
-    if (page === 1) {
-      setPosts(newPosts);
-    } else {
-      setPosts((prevPosts) => [...prevPosts, ...newPosts]);
-    }
+    
+    setPosts((prevPosts) => [...prevPosts, ...newPosts]);
   };
 
   const removePost = (postId: string) => {
