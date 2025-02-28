@@ -1,13 +1,22 @@
 interface ChatHeaderProps {
     chatName: string;
     isOnline?: boolean;
+    image?: string;
 }
 
-const ChatHeader = ({ chatName, isOnline = false }: ChatHeaderProps) => {
+const ChatHeader = ({ chatName, isOnline = false, image }: ChatHeaderProps) => {
     return (
         <div className="flex items-center p-4 bg-white border-b">
             <div className="relative">
-                <div className="w-10 h-10 rounded-full bg-gray-300 mr-3" />
+                {image ? (
+                    <img 
+                        src={image} 
+                        alt={chatName}
+                        className="w-10 h-10 rounded-full object-cover mr-3" 
+                    />
+                ) : (
+                    <div className="w-10 h-10 rounded-full bg-gray-300 mr-3" />
+                )}
                 {isOnline && (
                     <div className="absolute bottom-0 right-2 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
                 )}

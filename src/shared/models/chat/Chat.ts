@@ -5,5 +5,8 @@ export interface Chat {
     chatName: string;
     lastMessage: Message;
     unreadCount: number;
-    isGroup?: boolean;
+    isGroupChat?: boolean;
+    image?: string;
+    groupId?: string;
+    participants: string[];
 } 

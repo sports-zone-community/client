@@ -2,9 +2,11 @@ import { IoIosArrowDown } from "react-icons/io";
 import { IoSearchOutline } from "react-icons/io5";
 import { Chat } from '../../shared/models/chat/Chat';
 import ChatListItem from './ChatListItem';
+import { ChatFilter } from '../../shared/enums/ChatFilter';
+import { useChats } from "../../shared/hooks/useChats";
 
 interface ChatSidebarProps {
-    chatFilter: 'direct' | 'groups';
+    chatFilter: ChatFilter;
     searchTerm: string;
     selectedChat: string | null;
     onFilterChange: () => void;
@@ -22,6 +24,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
     onChatSelect,
     chats
 }: ChatSidebarProps) => {
+    const {isLoading} = useChats();
     return (
         <div className="w-80 bg-[#1a1a1a] border-r border-gray-700 flex flex-col">
             <div className="p-4 flex-shrink-0">
@@ -29,7 +32,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     onClick={onFilterChange}
                     className="flex w-full items-center justify-between text-lg font-semibold text-white mb-4"
                 >
-                    {chatFilter === 'direct' ? 'Direct Messages' : 'Groups'}
+                    {chatFilter === ChatFilter.DIRECT ? 'Direct Messages' : 'Groups'}
                     <IoIosArrowDown className={`text-gray-400 transform transition-transform ${
                         chatFilter === 'groups' ? 'rotate-180' : ''
                     }`} />
@@ -47,14 +50,20 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             </div>
 
             <div className="flex-1 overflow-y-auto">
-                {chats.map((chat: Chat) => (
-                    <ChatListItem
-                        key={chat.chatId}
-                        chat={chat}
-                        isSelected={chat.chatId === selectedChat}
-                        onClick={onChatSelect}
-                    />
-                ))}
+                {isLoading ? (
+                    <div className="flex items-center justify-center h-full">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+                    </div>
+                ) : (
+                    chats.map((chat: Chat) => (
+                        <ChatListItem
+                            key={chat.chatId}
+                            chat={chat}
+                            isSelected={chat.chatId === selectedChat}
+                            onClick={onChatSelect}
+                        />
+                    ))
+                )}
             </div>
         </div>
     );
