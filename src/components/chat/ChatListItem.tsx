@@ -10,7 +10,6 @@ const ChatListItem = ({ chat, isSelected, onClick }: ChatListItemProps) => {
     const handleClick = (): void => {
         onClick(chat.chatId);
     };
-
     return (
         <button
             type="button"
@@ -19,25 +18,40 @@ const ChatListItem = ({ chat, isSelected, onClick }: ChatListItemProps) => {
                 isSelected ? 'bg-gray-800' : ''
             }`}
         >
-            <div className="w-12 h-12 rounded-full bg-gray-600 mr-4 flex-shrink-0" />
-            <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-center">
-                    <h3 className="font-semibold text-white truncate">{chat.chatName}</h3>
+            {chat.image ? (
+                <img 
+                    src={chat.image} 
+                    alt={chat.chatName}
+                    className="w-12 h-12 rounded-full object-cover mr-4 flex-shrink-0" 
+                />
+            ) : (
+                <div className="w-12 h-12 rounded-full bg-gray-600 mr-4 flex-shrink-0" />
+            )}
+            {chat.lastMessage ? (
+                <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-center">
+                        <h3 className="font-semibold text-white truncate">{chat.chatName}</h3>
                     <span className="text-sm text-gray-400 ml-2 flex-shrink-0">
-                        {chat.lastMessage.formattedTime}
+                        {chat.lastMessage?.formattedTime}
                     </span>
                 </div>
                 <div className="flex justify-between items-center">
                     <p className="text-sm text-gray-400 truncate">
-                        {chat.lastMessage.content}
+                        {chat.lastMessage?.content}
                     </p>
                     {chat.unreadCount > 0 && (
                         <span className="ml-2 bg-blue-500 text-white text-xs rounded-full px-2 py-0.5 flex-shrink-0">
                             {chat.unreadCount}
                         </span>
                     )}
+                    </div>
                 </div>
-            </div>
+            ) : (
+                <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-white truncate">{chat.chatName}</h3>
+                    <span className="text-sm text-gray-400 ml-2 flex-shrink-0">No messages yet...</span>
+                </div>
+            )}
         </button>
     );
 };

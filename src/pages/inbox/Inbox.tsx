@@ -1,71 +1,39 @@
-import { useState, useCallback } from 'react';
-import { mockChats, mockMessages } from '../../shared/mocks/chatData';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import ChatSidebar from '../../components/chat/ChatSidebar';
 import ChatHeader from '../../components/chat/ChatHeader';
 import ChatMessage from '../../components/chat/ChatMessage';
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { Chat, Message } from '../../shared/models';
 import { ChatFilter } from '../../shared/enums/ChatFilter';
+import { useChats } from '../../shared/hooks/useChats';
+import { useAuth } from '../../shared/hooks/useAuth';
+
 
 const Inbox: React.FC = () => {
     const [selectedChat, setSelectedChat] = useState<string | null>(null);
     const [chatFilter, setChatFilter] = useState<ChatFilter>(ChatFilter.DIRECT);
     const [searchTerm, setSearchTerm] = useState('');
     const [messageInput, setMessageInput] = useState('');
-    const [currentMessages, setCurrentMessages] = useState<Message[]>([]);
-    const [chats, setChats] = useState<Chat[]>(mockChats);
+    const { chats, getChats, isLoading, enterChat, sendMessage, messages } = useChats();
+    const {user} = useAuth();
 
-    const markChatAsRead = useCallback((chatId: string) => {
-        setChats(prevChats => 
-            prevChats.map((chat: Chat) => 
-                chat.chatId === chatId
-                    ? { ...chat, unreadCount: 0 }
-                    : chat
-            )
-        );
-    }, []);
-
-    const handleChatSelect = useCallback((chatId: string) => {
+    const handleChatSelect = useCallback(async (chatId: string) => {
         if (chatId === selectedChat) return;
         
         setSelectedChat(chatId);
-        const messages: Message[] = mockMessages.filter(msg => msg.chatId === chatId);
-        setCurrentMessages(messages);
-        markChatAsRead(chatId);
-    }, [selectedChat, markChatAsRead]);
+        enterChat(chatId);
+    }, [selectedChat, enterChat]);
 
-    const handleSendMessage = (): void => {
+    const handleSendMessage = async (): Promise<void> => {
         if (!messageInput.trim() || !selectedChat) return;
 
-        const newMessage: Message = {
-            messageId: Date.now().toString(),
-            chatId: selectedChat,
-            content: messageInput,
-            sender: {
-                id: '678828ccb1afda3f98a74376', // Current user ID
-                name: 'Current User',
-                username: 'currentuser'
-            },
-            timestamp: new Date().toISOString(),
-            formattedTime: new Date().toLocaleTimeString([], { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            }),
-            isRead: true,
-            read: ['678828ccb1afda3f98a74376']
-        };
-
-        setCurrentMessages(prev => [...prev, newMessage]);
-
-        setChats(prevChats =>
-            prevChats.map((chat: Chat) =>
-                chat.chatId === selectedChat
-                    ? { ...chat, lastMessage: newMessage }
-                    : chat
-            )
-        );
-
-        setMessageInput('');
+        try {
+            const isGroup: boolean = currentChat?.isGroupChat || false;
+            await sendMessage(messageInput.trim(), selectedChat, isGroup);
+            setMessageInput('');
+        } catch (error) {
+            console.error('Failed to send message:', error);
+        }
     };
 
     const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>): void => {
@@ -74,13 +42,35 @@ const Inbox: React.FC = () => {
         }
     };
 
-    const filteredChats: Chat[] = chats.filter((chat: Chat) => {
-        const matchesFilter: boolean | undefined = chatFilter === 'direct' ? !chat.isGroup : chat.isGroup;
-        const matchesSearch: boolean = chat.chatName.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesFilter && matchesSearch;
-    });
+    const filteredChats: Chat[] = useMemo(() => {
+        return chats.filter((chat: Chat) => {
+            const matchesFilter: boolean | undefined = 
+            chatFilter === ChatFilter.DIRECT ? !chat.isGroupChat : chat.isGroupChat;
+
+            const matchesSearch: boolean = chat.chatName?.toLowerCase()?.includes(searchTerm.toLowerCase());
+            
+            return matchesFilter && matchesSearch;
+        });
+    }, [chats, chatFilter, searchTerm]);
 
     const currentChat: Chat | undefined = chats.find((chat: Chat) => chat.chatId === selectedChat);
+
+    const onChangeChatFilter = (): void => {
+        setChatFilter(prev => prev === ChatFilter.DIRECT ? ChatFilter.GROUPS : ChatFilter.DIRECT);
+    };
+
+    useEffect(() => {
+        getChats(chatFilter === ChatFilter.GROUPS);
+    }, [chatFilter]);
+
+    useEffect(() => {
+        if (messages.length > 0) {
+            const chatContainer: HTMLElement | null = document.querySelector('.overflow-y-auto');
+            if (chatContainer) {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }
+    }, [messages]);
 
     return (
         <div className="flex h-screen bg-gray-50">
@@ -88,27 +78,37 @@ const Inbox: React.FC = () => {
                 chatFilter={chatFilter}
                 searchTerm={searchTerm}
                 selectedChat={selectedChat}
-                onFilterChange={() => setChatFilter(prev => prev === ChatFilter.DIRECT ? ChatFilter.GROUPS : ChatFilter.DIRECT)}
+                onFilterChange={onChangeChatFilter}
                 onSearchChange={setSearchTerm}
                 onChatSelect={handleChatSelect}
                 chats={filteredChats}
             />
 
             <div className="flex-1 flex flex-col bg-white">
-                {currentChat ? (
+                {isLoading ? (
+                    <div className="flex items-center justify-center h-full">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+                    </div>
+                ) : currentChat ? (
                     <>
                         <ChatHeader 
                             chatName={currentChat.chatName} 
                             isOnline={true} 
+                            image={currentChat.image}
                         />
-                        <div className="flex-1 overflow-y-auto p-4 bg-white">
-                            {currentMessages.map((message: Message) => (
+                        <div className="flex-1 overflow-y-auto chat-messages-container p-4 bg-white">
+                            {messages.map((message: Message) => (
                                 <ChatMessage
                                     key={message.messageId}
                                     message={message}
-                                    isOwnMessage={message.sender.id === '678828ccb1afda3f98a74376'}
+                                    isOwnMessage={message.sender.id === user?._id}
                                 />
                             ))}
+                            {messages.length === 0 && (
+                                <div className="h-full flex items-center justify-center text-gray-500 text-center text-xl">
+                                    No messages yet so start chatting now :)
+                                </div>
+                            )}
                         </div>
                         <div className="p-4 bg-white border-t">
                             <div className="relative">
@@ -119,10 +119,15 @@ const Inbox: React.FC = () => {
                                     onKeyPress={handleKeyPress}
                                     placeholder="Your message"
                                     className="w-full px-4 py-3 bg-gray-100 rounded-full pr-12 focus:outline-none"
+                                    disabled={!currentChat}
                                 />
                                 <button 
                                     onClick={handleSendMessage}
-                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700"
+                                    disabled={!messageInput.trim() || !currentChat}
+                                    className={`absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center text-white
+                                        ${messageInput.trim() && currentChat 
+                                            ? 'bg-blue-600 hover:bg-blue-700' 
+                                            : 'bg-gray-400 cursor-not-allowed'}`}
                                 >
                                     <PaperAirplaneIcon className="w-6 h-6" />
                                 </button>

@@ -1,4 +1,4 @@
-import { Message } from '../../shared/models/chat/Chat';
+import { Message } from '../../shared/models/chat/Message';
 
 interface ChatMessageProps {
     message: Message;
@@ -19,6 +19,11 @@ const ChatMessage = ({ message, isOwnMessage }: ChatMessageProps) => {
                         : 'bg-gray-100 text-gray-800'
                 }`}
             >
+                {!isOwnMessage && message.sender.name && (
+                    <div className="text-xs font-medium text-blue-600 mb-1">
+                        {message.sender.name}
+                    </div>
+                )}
                 <p>{message.content}</p>
                 <div className={`text-xs mt-1 ${
                     isOwnMessage ? 'text-gray-200' : 'text-gray-500'
