@@ -22,7 +22,7 @@ const publicRoutes = [
   { path: '/register', element: <Register /> },
 ];
 
-const protectedRoutes = [
+export const protectedRoutes = [
   { path: '/dashboard', element: <Dashboard /> },
   { path: '/inbox', element: <Inbox /> },
   { path: '/explore', element: <Explore /> },

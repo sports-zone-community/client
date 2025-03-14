@@ -14,8 +14,8 @@ const addPostSchema = z.object({
   description: z
     .string()
     .min(1, { message: 'Content cannot be empty' })
-    .max(100, { message: 'Content must be less than 100 characters' }),
-  groupId: z.string(),
+    .max(200, { message: 'Content must be less than 200 characters' }),
+  groupId: z.string().optional(),
 });
 
 export type AddPostFormInputs = z.infer<typeof addPostSchema>;
