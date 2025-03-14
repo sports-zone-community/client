@@ -4,6 +4,9 @@ import { deletePost } from '../../../features/api/posts.ts';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { usePosts } from '../../../shared/hooks/usePosts.ts';
+import { ToastContent } from '../../toastContent/toastContent.tsx';
+import { ToastType } from '../../../shared/enums/ToastType.ts';
+import { toastConfig } from '../../../shared/functions/toastConfig.ts';
 
 export interface PostOptionsProps {
   postId: string;
@@ -30,9 +33,24 @@ const PostOptions = ({ postId }: PostOptionsProps) => {
     try {
       await deletePost(postId);
       removePost(postId);
-      toast.success('Post deleted successfully');
+      toast.success(
+        <ToastContent
+          message="Post deleted successfully"
+          description="Your post has been deleted"
+          type={ToastType.SUCCESS}
+        />,
+        toastConfig,
+      );
     } catch (error) {
-      toast.error('Could not delete post');
+      toast.error(
+        <ToastContent
+          message="Error creating post!"
+          description="Please try again."
+          type={ToastType.ERROR}
+        />,
+        toastConfig,
+      );
+      console.error('Error deleting post:', error);
     }
   };
 
