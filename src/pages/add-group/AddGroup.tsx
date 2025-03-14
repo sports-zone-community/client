@@ -5,45 +5,102 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { NavigateFunction } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { ToastContent } from '../../components/toastContent/toastContent';
 import { ToastType } from '../../shared/enums/ToastType';
+import { CreateGroupModel } from '../../shared/models/Group';
+import { useGroups } from '../../shared/hooks/useGroups';
+import { toastConfig } from '../../shared/functions/toastConfig';
+import { Dropdown } from '../../components/common/dropdown/Dropdown';
+import { Team } from '../../shared/models/Team';
+import { fetchTeams, fetchTeamLogo } from '../../features/api/teams';
+
+const leagueCode: string = '39';
+const season: string = '2023';
 
 const createGroupSchema = z.object({
   name: z.string()
     .min(3, "Name must be at least 3 characters"),
   description: z.string()
-    .min(10, "Description must be at least 10 characters"),
-  image: z.instanceof(FileList)
-    .refine((files: FileList) => files.length > 0, "Group image is required")
+    .min(5, "Description must be at least 5 characters"),
+  image: z.any()
+    .refine((file) => file?.[0] instanceof File, "Group image is required")
 });
 
 type FormInputs = z.infer<typeof createGroupSchema>;
 
 const CreateGroup = () => {
-  const { register, handleSubmit, formState: { errors }, watch, reset } = useForm<FormInputs>({
+  const { createGroup } = useGroups();
+  const { register, handleSubmit, formState: { errors }, watch, reset, setValue } = useForm<FormInputs>({
     resolver: zodResolver(createGroupSchema),
     mode: "onChange"
   });
 
-  const imageFile: File | null = watch('image')?.[0] as File | null;
-  const previewUrl: string = imageFile ? URL.createObjectURL(imageFile) : '';
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
 
-  const navigate = useNavigate();
+  const imageFile: File | null = watch('image')?.[0];
+  const groupName: string = watch('name');
 
-  const onSubmitForm = (data: FormInputs) => {
-    // TODO: Add group to database
-    console.log(data);
+  const previewUrl: string = imageFile instanceof File ? URL.createObjectURL(imageFile) : '';
 
-    toast.success(
-      <ToastContent message="Group created successfully!" description="Redirecting to dashboard..." type={ToastType.SUCCESS} />,
-      {
-        position: "top-center",
-        autoClose: 3000,
-        closeOnClick: true,
-        pauseOnHover: true,
-        icon: false
+  const navigate: NavigateFunction = useNavigate();
+
+  useEffect(() => {
+    const fetchTeamsFromServer = async () => {
+      try {
+        const teams: Team[] = await fetchTeams(leagueCode, season);
+        setTeams(teams);
+      } catch (error) {
+        console.error('Error fetching teams:', error);
       }
-    );
+    };
+
+    fetchTeamsFromServer();
+  }, []);
+
+  const handleTeamSelect = async (team: Team): Promise<void> => {
+    if (!team) return;
+    setSelectedTeam(team);
+    setValue('name', team?.name);
+    
+    const file: File = await fetchTeamLogo(team);
+    setValue('image', [file]);
+     
+  };
+
+  useEffect(() => {
+    if (selectedTeam && selectedTeam.name !== groupName) {
+      setSelectedTeam(null);
+    }
+  }, [groupName, selectedTeam]);
+
+  const onSubmitForm = async (data: FormInputs) => {
+    const { name, description, image } = data;
+    const createGroupModel: CreateGroupModel = {
+      name,
+      description,
+      image: image[0]
+    };
+
+    try {
+      await createGroup(createGroupModel);
+      toast.success(
+        <ToastContent 
+          message="Group created successfully!" 
+          description="Redirecting to dashboard..." 
+          type={ToastType.SUCCESS} 
+        />,
+        toastConfig
+      );
+    } catch (error) {
+      console.error('Error creating group:', error);
+      toast.error(
+        <ToastContent message="Error creating group!" description="Please try again." type={ToastType.ERROR} />,
+        toastConfig
+      );
+    }
 
     reset();
     setTimeout(() => {
@@ -52,7 +109,7 @@ const CreateGroup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black from-blue-50 to-indigo-100 p-4 sm:p-6 md:p-8">
+    <div className="min-h-screen from-blue-50 to-indigo-100 p-4 sm:p-6 md:p-8">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -63,6 +120,14 @@ const CreateGroup = () => {
             <UserGroupIcon className="h-8 w-8 text-blue-500" />
             <h1 className="text-3xl font-bold text-gray-100">Create Group</h1>
           </div>
+
+          <Dropdown<Team>
+            items={teams}
+            selectedItem={selectedTeam}
+            onItemSelect={handleTeamSelect}
+            label="Select Team (Optional)"
+            placeholder="Choose a team..."
+          />
 
           <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-6">
             <div className="space-y-2">
@@ -121,7 +186,7 @@ const CreateGroup = () => {
                   )}
                 </label>
                 {errors.image && (
-                  <p className="text-red-400 text-sm mt-2">{errors.image.message}</p>
+                  <p className="text-red-400 text-sm mt-2">{errors.image.message as string}</p>
                 )}
               </div>
             </div>

@@ -12,9 +12,13 @@ import AddPost from './pages/add-post/AddPost';
 import Profile from './pages/profile/Profile';
 import AddGroup from './pages/add-group/AddGroup';
 import Explore from './pages/explore/Explore';
-import { Bounce, ToastContainer } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import EditPost from './pages/edit-post/EditPost.tsx';
 import { PostsProvider } from './components/post/context/PostsProvider.tsx';
+import { GroupsProvider } from './components/groups/context/GroupsProvider.tsx';
+import { ChatsProvider } from './components/chat/context/ChatsProvider.tsx';
+import { configToast } from './shared/functions/toastConfig';
+import { SocketProvider } from './services/socket/SocketContext';
 
 const publicRoutes = [
   { path: '/', element: <Home /> },
@@ -36,37 +40,40 @@ const App = () => {
   return (
     <>
       <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        pauseOnFocusLoss={false}
-        pauseOnHover={false}
-        theme="dark"
-        transition={Bounce}
-        closeOnClick={true}
-      />
+                position="top-center"
+                theme="dark"
+                className="!transform-gpu"
+                toastClassName={configToast}
+            />
       <BrowserRouter>
         <AuthProvider>
-          <Layout>
-            <Routes>
-              {publicRoutes.map(({ path, element }) => (
-                <Route key={path} path={path} element={element} />
-              ))}
-
-              <Route
-                element={
-                  <ProtectedRoute>
-                    <PostsProvider>
-                      <Outlet />
-                    </PostsProvider>
-                  </ProtectedRoute>
-                }
-              >
-                {protectedRoutes.map(({ path, element }) => (
+            <Layout>
+              <Routes>
+                {publicRoutes.map(({ path, element }) => (
                   <Route key={path} path={path} element={element} />
                 ))}
-              </Route>
-            </Routes>
-          </Layout>
+
+                <Route
+                  element={
+                    <ProtectedRoute>
+                      <SocketProvider>
+                        <GroupsProvider>
+                          <ChatsProvider>
+                            <PostsProvider>
+                            <Outlet />
+                          </PostsProvider>
+                        </ChatsProvider>
+                      </GroupsProvider>
+                      </SocketProvider>
+                    </ProtectedRoute>
+                  }
+                >
+                  {protectedRoutes.map(({ path, element }) => (
+                    <Route key={path} path={path} element={element} />
+                  ))}
+                </Route>
+              </Routes>
+            </Layout>
         </AuthProvider>
       </BrowserRouter>
     </>

@@ -8,6 +8,9 @@ import { createPost } from '../../features/api/posts.ts';
 import ImageInput from '../../components/post/components/ImageInput.tsx';
 import DescriptionInput from '../../components/post/components/DescriptionInput.tsx';
 import GroupsInput from '../../components/post/components/GroupsInput.tsx';
+import { ToastContent } from '../../components/toastContent/toastContent';
+import { ToastType } from '../../shared/enums/ToastType';
+import { toastConfig } from '../../shared/functions/toastConfig.ts';
 
 const addPostSchema = z.object({
   image: z.instanceof(File),
@@ -39,10 +42,24 @@ const AddPost = () => {
 
     try {
       await createPost(image, description, groupId);
-      toast.success('Post Created Successfully!');
+      toast.success(
+        <ToastContent 
+          message="Post Created Successfully!" 
+          description="Your post has been created" 
+          type={ToastType.SUCCESS} 
+        />,
+        toastConfig
+      );
     } catch (error) {
       console.error('Failed to create post', error);
-      toast.error('Failed to create post');
+      toast.error(
+        <ToastContent 
+          message="Failed to create post" 
+          description="Please try again later" 
+          type={ToastType.ERROR} 
+        />,
+        toastConfig
+      );
     }
 
     reset();

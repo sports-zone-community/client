@@ -13,38 +13,28 @@ export interface ToastContentProps {
 }
 
 export const ToastContent = ({ message, description, type }: ToastContentProps) => {
-  const toastConfig = {
-    [ToastType.SUCCESS]: {
-      icon: CheckCircleIcon,
-      bgColor: 'bg-green-100',
-      textColor: 'text-green-500',
-    },
-    [ToastType.ERROR]: {
-      icon: ExclamationCircleIcon,
-      bgColor: 'bg-red-100',
-      textColor: 'text-red-500',
-    },
-    [ToastType.INFO]: {
-      icon: InformationCircleIcon,
-      bgColor: 'bg-blue-100',
-      textColor: 'text-blue-500',
-    },
-    [ToastType.WARNING]: {
-      icon: ExclamationTriangleIcon,
-      bgColor: 'bg-yellow-100',
-      textColor: 'text-yellow-500',
-    },
+  const getIcon = () => {
+    switch (type) {
+      case ToastType.SUCCESS:
+        return <CheckCircleIcon className="w-6 h-6 text-green-500" />;
+      case ToastType.ERROR:
+        return <ExclamationCircleIcon className="w-6 h-6 text-red-500" />;
+      case ToastType.WARNING:
+        return <ExclamationTriangleIcon className="w-6 h-6 text-yellow-500" />;
+      case ToastType.INFO:
+        return <InformationCircleIcon className="w-6 h-6 text-blue-500" />;
+      default:
+        return null;
+    }
   };
 
-  const { icon: Icon, bgColor, textColor } = toastConfig[type];
-
   return (
-    <div className="flex flex-col items-center space-y-2">
-      <div className={`flex items-center justify-center w-12 h-12 ${bgColor} rounded-full mb-2`}>
-        <Icon className={`w-8 h-8 ${textColor}`} />
+    <div className="flex items-center gap-3">
+      {getIcon()}
+      <div className="flex flex-col">
+        <span className="font-medium text-sm text-black">{message}</span>
+        <span className="text-xs text-gray-400">{description}</span>
       </div>
-      <h3 className="text-lg font-semibold text-gray-800">{message}</h3>
-      <p className="text-sm text-gray-600">{description}</p>
     </div>
   );
 };
