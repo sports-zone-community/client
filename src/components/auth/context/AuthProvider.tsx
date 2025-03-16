@@ -12,9 +12,10 @@ import { AxiosResponse } from 'axios';
 import AuthContext from './AuthContext.tsx';
 import { useGoogleLogin } from '@react-oauth/google';
 import Popup from '../../common/Popup.tsx';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { config } from '../../../config.ts';
 import { setToken } from '../../../shared/utils/auth.utils.ts';
+import { protectedRoutes } from '../../../App.tsx';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -25,14 +26,17 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [popupMessage, setPopup] = useState<string>('');
   const navigate = useNavigate();
+  const location = useLocation();
   const authUri: string = config.authUri;
 
   useEffect(() => {
     const initAuth = async () => {
       await verifyUser();
       setIsLoading(false);
+      if (!protectedRoutes.some((route) => route.path === location.pathname)) {
+        navigate('/dashboard');
+      }
     };
-
     initAuth();
   }, []);
 
