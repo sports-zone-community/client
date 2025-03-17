@@ -10,6 +10,9 @@ import DescriptionInput from '../../components/post/components/DescriptionInput.
 import { usePosts } from '../../shared/hooks/usePosts.ts';
 import Loading from '../../components/common/Loading.tsx';
 import { config } from '../../config.ts';
+import { ToastContent } from '../../components/toastContent/toastContent.tsx';
+import { ToastType } from '../../shared/enums/ToastType.ts';
+import { toastConfig } from '../../shared/functions/toastConfig.ts';
 
 const editPostSchema = z.object({
   image: z.instanceof(File),
@@ -51,7 +54,9 @@ const EditPost = () => {
       setIsLoading(true);
       const post = getPostById(postId!);
       if (!post) {
-        toast.error('Post not found');
+        toast.error(
+          <ToastContent message="Post not found" description="" type={ToastType.ERROR} />,
+        );
         navigate('/dashboard');
         return;
       }
@@ -75,10 +80,19 @@ const EditPost = () => {
       setIsLoading(true);
       const imageToUpdate = data.image instanceof File ? data.image : undefined;
       await updatePost(postId!, imageToUpdate, data.description ?? undefined);
-      toast.success('Post updated Successfully!');
+      toast.success(
+        <ToastContent
+          message="Post updated Successfully!"
+          description=""
+          type={ToastType.SUCCESS}
+        />,
+        toastConfig,
+      );
     } catch (error) {
       console.error('Failed to update post', error);
-      toast.error('Failed to update post');
+      toast.error(
+        <ToastContent message="Failed to update post" description="" type={ToastType.ERROR} />,
+      );
     } finally {
       setIsLoading(false);
       setHasChanges(false);
