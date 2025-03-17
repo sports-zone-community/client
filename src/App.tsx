@@ -11,7 +11,7 @@ import Inbox from './pages/inbox/Inbox';
 import AddPost from './pages/add-post/AddPost';
 import Profile from './pages/profile/Profile';
 import AddGroup from './pages/add-group/AddGroup';
-import Explore from './pages/explore/Explore';
+import Search from './pages/search/Search.tsx';
 import { ToastContainer } from 'react-toastify';
 import EditPost from './pages/edit-post/EditPost.tsx';
 import { PostsProvider } from './components/post/context/PostsProvider.tsx';
@@ -30,7 +30,7 @@ const publicRoutes = [
 export const protectedRoutes = [
   { path: '/dashboard', element: <Dashboard /> },
   { path: '/inbox', element: <Inbox /> },
-  { path: '/explore', element: <Explore /> },
+  { path: '/search', element: <Search /> },
   { path: '/add-post', element: <AddPost /> },
   { path: '/edit-post/:postId', element: <EditPost /> },
   { path: '/add-group', element: <AddGroup /> },
