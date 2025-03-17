@@ -53,7 +53,10 @@ const Profile = () => {
           >
             <FaPlus className="mr-2" /> <span className="ml-auto">Add Post</span>
           </button>
-          <button className="bg-gray-500 text-white px-3 py-1 rounded flex items-center w-32">
+          <button
+            className="bg-gray-500 text-white px-3 py-1 rounded flex items-center w-32"
+            onClick={() => navigate('/edit-profile')}
+          >
             <FaCog className="mr-2" /> <span className="ml-auto">Settings</span>
           </button>
         </div>
