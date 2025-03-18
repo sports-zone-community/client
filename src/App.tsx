@@ -11,7 +11,6 @@ import Inbox from './pages/inbox/Inbox';
 import AddPost from './pages/add-post/AddPost';
 import Profile from './pages/profile/Profile';
 import AddGroup from './pages/add-group/AddGroup';
-import Search from './pages/search/Search.tsx';
 import { ToastContainer } from 'react-toastify';
 import EditPost from './pages/edit-post/EditPost.tsx';
 import { PostsProvider } from './components/post/context/PostsProvider.tsx';
@@ -19,7 +18,7 @@ import { GroupsProvider } from './components/groups/context/GroupsProvider.tsx';
 import { ChatsProvider } from './components/chat/context/ChatsProvider.tsx';
 import { configToast } from './shared/functions/toastConfig';
 import { SocketProvider } from './services/socket/SocketContext';
-import EditProfile from "./pages/edit-profile/EditProfile.tsx";
+import EditProfile from './pages/edit-profile/EditProfile.tsx';
 
 const publicRoutes = [
   { path: '/', element: <Home /> },
@@ -30,7 +29,6 @@ const publicRoutes = [
 export const protectedRoutes = [
   { path: '/dashboard', element: <Dashboard /> },
   { path: '/inbox', element: <Inbox /> },
-  { path: '/search', element: <Search /> },
   { path: '/add-post', element: <AddPost /> },
   { path: '/edit-post/:postId', element: <EditPost /> },
   { path: '/add-group', element: <AddGroup /> },
