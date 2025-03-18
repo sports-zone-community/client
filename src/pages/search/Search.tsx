@@ -9,9 +9,9 @@ interface SearchProps {
 const Search: React.FC<SearchProps> = ({ visible, onClose }) => {
   return (
     <motion.div
-      initial={{ x: '-100%' }}
-      animate={{ x: visible ? '70%' : '-100%' }}
-      transition={{ duration: 0.5 }}
+      initial={{ x: '70%', opacity: 0, visibility: 'hidden' }}
+      animate={{ opacity: visible ? 1 : 0, visibility: visible ? 'visible' : 'hidden' }}
+      transition={{ duration: 0.3 }}
       className="fixed inset-y-0 left-0 w-80 bg-gray-900 text-white shadow-lg z-40"
     >
       <div className="p-4">

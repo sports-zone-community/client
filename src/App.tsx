@@ -19,6 +19,8 @@ import { ChatsProvider } from './components/chat/context/ChatsProvider.tsx';
 import { configToast } from './shared/functions/toastConfig';
 import { SocketProvider } from './services/socket/SocketContext';
 import EditProfile from './pages/edit-profile/EditProfile.tsx';
+import Search from './pages/search/Search.tsx';
+import { useState } from 'react';
 
 const publicRoutes = [
   { path: '/', element: <Home /> },
@@ -37,6 +39,18 @@ export const protectedRoutes = [
 ];
 
 const App = () => {
+  const [isSearchDrawerVisible, setIsSearchDrawerVisible] = useState(false);
+
+  const showSearchDrawer = () => {
+    console.log('showSearchDrawer');
+    setIsSearchDrawerVisible(true);
+  };
+
+  const closeSearchDrawer = () => {
+    console.log('closeSearchDrawer');
+    setIsSearchDrawerVisible(false);
+  };
+
   return (
     <>
       <ToastContainer
@@ -47,7 +61,7 @@ const App = () => {
       />
       <BrowserRouter>
         <AuthProvider>
-          <Layout>
+          <Layout onSearchClick={showSearchDrawer} onOutsideClick={closeSearchDrawer}>
             <Routes>
               {publicRoutes.map(({ path, element }) => (
                 <Route key={path} path={path} element={element} />
@@ -74,6 +88,7 @@ const App = () => {
               </Route>
             </Routes>
           </Layout>
+          <Search visible={isSearchDrawerVisible} onClose={closeSearchDrawer} />
         </AuthProvider>
       </BrowserRouter>
     </>

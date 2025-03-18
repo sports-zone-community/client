@@ -7,9 +7,10 @@ import Logo from '../../assets/logo.png';
 
 interface SidebarProps {
   onSearchClick: () => void;
+  onOtherClick: () => void;
 }
 
-const Sidebar = ({ onSearchClick }: SidebarProps) => {
+const Sidebar = ({ onSearchClick, onOtherClick }: SidebarProps) => {
   const { logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ const Sidebar = ({ onSearchClick }: SidebarProps) => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="flex flex-col justify-between w-56 bg-black p-4 fixed inset-y-0 left-0 z-50">
+    <div className="flex flex-col justify-between w-56 bg-black p-4">
       <div className="space-y-6">
         <div className="flex items-center justify-center space-x-2 mb-1">
           <span className="text-xl font-bold text-white">SportsZone</span>
@@ -36,11 +37,11 @@ const Sidebar = ({ onSearchClick }: SidebarProps) => {
             return (
               <Link
                 key={item.name}
-                to={item.path}
+                to={item.name === 'Search' ? location.pathname : item.path}
                 className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
                   isActive(item.path) ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800'
                 }`}
-                onClick={item.name === 'Search' ? onSearchClick : undefined}
+                onClick={item.name === 'Search' ? onSearchClick : onOtherClick}
               >
                 <Icon className="h-6 w-6" aria-hidden="true" />
                 <span>{item.name}</span>
