@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import api from '../../features/api/api.ts';
+import { SearchResultModel } from '../../shared/models/Search.ts';
+import SearchResult from './SearchResult.tsx';
+import { AxiosResponse } from 'axios';
 
 interface SearchProps {
   visible: boolean;
   onClose: () => void;
 }
 
-interface SearchResult {
-  name: string;
-  // Add other properties as needed
-}
-
 const Search: React.FC<SearchProps> = ({ visible, onClose }) => {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const [results, setResults] = useState<SearchResultModel[]>([]);
 
   useEffect(() => {
     const handleSearch = async () => {
@@ -26,8 +24,14 @@ const Search: React.FC<SearchProps> = ({ visible, onClose }) => {
       }
 
       try {
-        const response = await api.get(`/search/${query}`);
-        setResults(response.data);
+        const response: AxiosResponse<SearchResultModel[]> = await api.get(`/search/${query}`);
+        const parserResponse: SearchResultModel[] = response.data.map(
+          (searchResult: SearchResultModel): SearchResultModel =>
+            searchResult.image.includes('uploads\\')
+              ? { ...searchResult, image: `${api.defaults.baseURL}/${searchResult.image}` }
+              : searchResult,
+        );
+        setResults(parserResponse);
       } catch (error) {
         console.error('Search error:', error);
       } finally {
@@ -45,6 +49,10 @@ const Search: React.FC<SearchProps> = ({ visible, onClose }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
     setLoading(true);
+  };
+
+  const handleResultClick = (result: SearchResultModel) => {
+    console.log('Result clicked:', result);
   };
 
   return (
@@ -78,13 +86,15 @@ const Search: React.FC<SearchProps> = ({ visible, onClose }) => {
         ) : (
           <div>
             {results.length > 0 ? (
-              <ul>
+              <div>
                 {results.map((result, index) => (
-                  <li key={index} className="p-2 border-b border-gray-700">
-                    {result.name}
-                  </li>
+                  <SearchResult
+                    key={index}
+                    result={result}
+                    onClick={() => handleResultClick(result)}
+                  />
                 ))}
-              </ul>
+              </div>
             ) : (
               <p className="text-gray-500">No results found</p>
             )}
