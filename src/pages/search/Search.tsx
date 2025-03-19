@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import api from '../../features/api/api.ts';
 import { SearchResultModel } from '../../shared/models/Search.ts';
@@ -15,6 +15,34 @@ const Search: React.FC<SearchProps> = ({ visible, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResultModel[]>([]);
   const [filter, setFilter] = useState<'all' | 'user' | 'group'>('all');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (visible && inputRef.current) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+    }
+  }, [visible]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    if (visible) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [visible, onClose]);
 
   useEffect(() => {
     const handleSearch = async () => {
@@ -64,19 +92,18 @@ const Search: React.FC<SearchProps> = ({ visible, onClose }) => {
       animate={{ opacity: visible ? 1 : 0, visibility: visible ? 'visible' : 'hidden' }}
       transition={{ duration: 0.3 }}
       className="fixed inset-y-0 left-0 w-80 bg-gray-900 text-white shadow-lg z-40"
+      ref={searchRef}
     >
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Search</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-300">
-            &times;
-          </button>
+          <h2 className="text-2xl font-semibold">Search</h2>
         </div>
         <input
           type="text"
           placeholder="Search..."
           value={query}
           onChange={handleInputChange}
+          ref={inputRef}
           className="w-full p-2 border border-gray-700 bg-gray-800 text-white rounded mb-4"
         />
         {loading ? (
