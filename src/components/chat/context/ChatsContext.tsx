@@ -15,6 +15,7 @@ interface ChatsContextType {
   setError: (error: string | null) => void;
   sendMessage: (content: string, chatId: string, isGroup: boolean) => Promise<void>;
   joinGroup: (groupId: string) => Promise<void>;
+  followUser: (followedUserId: string) => Promise<void>;
 }
 
 export const ChatsContext = createContext<ChatsContextType | undefined>(undefined);

@@ -28,3 +28,8 @@ export const createNewGroup = async (group: CreateGroupModel): Promise<GroupMode
     image: response.data.image ? `${config.apiUrl}/${response.data.image}` : response.data.image
   };
 };
+
+export const joinGroupById = async (groupId: string): Promise<GroupModel> => {
+  const response: AxiosResponse<GroupModel> = await api.post(`groups/toggle-join/${groupId}`);
+  return response.data;
+};

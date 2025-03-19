@@ -1,6 +1,7 @@
 import { ReactNode, useState, useEffect, useCallback } from 'react';
 import { Chat, Message } from '../../../shared/models';
 import { fetchChats, getChatMessages, getUnreadMessages, markMessagesAsRead } from '../../../features/api/chats';
+import { joinGroupById } from '../../../features/api/groups';
 import { ChatsContext } from './ChatsContext';
 import { useAuth } from '../../../shared/hooks/useAuth';
 import { useSocket } from '../../../services/socket/SocketContext';
@@ -182,6 +183,16 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user, socket, scrollToBottom]);
 
+  const followUser = useCallback(async (followedUserId: string): Promise<void> => {
+    if (!user) return;
+    try {
+      socket.followUser(user._id, followedUserId);
+    } catch (err) {
+      console.error('Error following user:', err);
+      setError('Failed to follow user');
+    }
+  }, [user, socket]);
+
   const handleNewMessage = useCallback(async (message: Message) => {
     console.log('New message received:', message, 'Active chat:', activeChat);
     
@@ -306,13 +317,10 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
       });
     };
 
-    const handleGroupJoined = (data: GroupJoinedEvent) => {
+    const handleGroupJoined = async (data: GroupJoinedEvent) => {
       if (data.success) {
         getChats(true);
-        
-        if (data.chatId) {
-          enterChat(data.chatId);
-        }
+        await joinGroupById(data.groupId);
       }
     };
 
@@ -344,6 +352,17 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
+    const handleChatCreated = (chat: Chat): void => {
+      setChats(prev => {
+        const currentFilter: boolean = prev.some((c: Chat) => c.isGroupChat) === chat.isGroupChat;
+        if (!currentFilter) {
+          getChats(chat.isGroupChat);
+          return prev;
+        }
+        return [chat, ...prev];
+      });
+    };
+
     const handleError = (error: Error) => {
       console.error('Socket error:', error);
       setError(error.message);
@@ -355,6 +374,7 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
     const unsubscribeNewChat = socket.onNewChat(handleNewChat);
     const unsubscribeEnterChat = socket.onEnterChat(handleMessagesRead);
     const unsubscribeError = socket.onSocketError(handleError);
+    const unsubscribeChatCreated = socket.onChatCreated(handleChatCreated);
     return () => {
       unsubscribeNewMessage();
       unsubscribeUnreadMessage();
@@ -362,11 +382,12 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
       unsubscribeNewChat();
       unsubscribeError();
       unsubscribeEnterChat();
+      unsubscribeChatCreated();
       if (activeChat) {
         leaveChat();
       }
     };
-  }, [user, socket, activeChat, getChats, enterChat]);
+  }, [user, socket, activeChat, getChats, enterChat, joinGroup]);
 
   const leaveChat = useCallback(() => {
     if (activeChat && user) {
@@ -408,7 +429,8 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
       leaveChat,
       sendMessage,
       getChats,
-      joinGroup
+      joinGroup,
+      followUser
     }}>
       {children}
     </ChatsContext.Provider>
