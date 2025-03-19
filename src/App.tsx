@@ -42,12 +42,10 @@ const App = () => {
   const [isSearchDrawerVisible, setIsSearchDrawerVisible] = useState(false);
 
   const showSearchDrawer = () => {
-    console.log('showSearchDrawer');
     setIsSearchDrawerVisible(true);
   };
 
   const closeSearchDrawer = () => {
-    console.log('closeSearchDrawer');
     setIsSearchDrawerVisible(false);
   };
 
