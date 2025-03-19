@@ -47,6 +47,15 @@ const Search: React.FC<SearchProps> = ({ visible, onClose }) => {
   }, [visible, onClose]);
 
   useEffect(() => {
+    if (!visible) {
+      setQuery('');
+      setResults([]);
+      setLoading(false);
+      setFilter('all');
+    }
+  }, [visible]);
+
+  useEffect(() => {
     const handleSearch = async () => {
       if (query.trim() === '') {
         setResults([]);
