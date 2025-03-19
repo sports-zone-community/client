@@ -14,6 +14,7 @@ const Search: React.FC<SearchProps> = ({ visible, onClose }) => {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResultModel[]>([]);
+  const [filter, setFilter] = useState<'all' | 'user' | 'group'>('all');
 
   useEffect(() => {
     const handleSearch = async () => {
@@ -55,6 +56,8 @@ const Search: React.FC<SearchProps> = ({ visible, onClose }) => {
     console.log('Result clicked:', result);
   };
 
+  const filteredResults = results.filter((result) => filter === 'all' || result.type === filter);
+
   return (
     <motion.div
       initial={{ x: '70%', opacity: 0, visibility: 'hidden' }}
@@ -85,9 +88,31 @@ const Search: React.FC<SearchProps> = ({ visible, onClose }) => {
           </div>
         ) : (
           <div>
-            {results.length > 0 ? (
+            {results.length > 0 && (
+              <div className="flex justify-center mb-4">
+                <button
+                  onClick={() => setFilter('all')}
+                  className={`flex-1 px-2 py-1 mx-1 rounded-full ${filter === 'all' ? 'bg-blue-500' : 'bg-gray-700'} text-white`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => setFilter('user')}
+                  className={`flex-1 px-2 py-1 mx-1 rounded-full ${filter === 'user' ? 'bg-blue-500' : 'bg-gray-700'} text-white`}
+                >
+                  Users
+                </button>
+                <button
+                  onClick={() => setFilter('group')}
+                  className={`flex-1 px-2 py-1 mx-1 rounded-full ${filter === 'group' ? 'bg-blue-500' : 'bg-gray-700'} text-white`}
+                >
+                  Groups
+                </button>
+              </div>
+            )}
+            {filteredResults.length > 0 ? (
               <div>
-                {results.map((result, index) => (
+                {filteredResults.map((result, index) => (
                   <SearchResult
                     key={index}
                     result={result}
