@@ -4,6 +4,7 @@ import api from '../../features/api/api.ts';
 import { SearchResultModel } from '../../shared/models/Search.ts';
 import SearchResult from './SearchResult.tsx';
 import { AxiosResponse } from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 interface SearchProps {
   visible: boolean;
@@ -17,6 +18,7 @@ const Search: React.FC<SearchProps> = ({ visible, onClose }) => {
   const [filter, setFilter] = useState<'all' | 'user' | 'group'>('all');
   const inputRef = useRef<HTMLInputElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (visible && inputRef.current) {
@@ -81,7 +83,12 @@ const Search: React.FC<SearchProps> = ({ visible, onClose }) => {
   };
 
   const handleResultClick = (result: SearchResultModel) => {
-    console.log('Result clicked:', result);
+    if (result.type === 'user') {
+      navigate(`/user/${result.id}`);
+    } else if (result.type === 'group') {
+      navigate(`/group/${result.id}`);
+    }
+    onClose();
   };
 
   const filteredResults = results.filter((result) => filter === 'all' || result.type === filter);
@@ -95,7 +102,7 @@ const Search: React.FC<SearchProps> = ({ visible, onClose }) => {
       ref={searchRef}
     >
       <div className="p-4">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-center items-center mb-4">
           <h2 className="text-2xl font-semibold">Search</h2>
         </div>
         <input

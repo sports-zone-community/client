@@ -1,4 +1,5 @@
 export interface SearchResultModel {
+  id: string;
   name: string;
   image: string;
   type: 'user' | 'group';
