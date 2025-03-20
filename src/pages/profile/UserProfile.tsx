@@ -26,8 +26,11 @@ const UserProfile = ({ profileType }: { profileType: 'own' | 'other' }) => {
     loadUserProfile();
     setPage(1);
     loadPosts(1);
-    checkIfFollowing();
   }, [userId]);
+
+  useEffect(() => {
+    checkIfFollowing();
+  }, [user]);
 
   const loadUserProfile = async () => {
     const profileUser: UserModel = await fetchUserById(userId);
@@ -132,7 +135,7 @@ const UserProfile = ({ profileType }: { profileType: 'own' | 'other' }) => {
             </button>
             <button
               className="bg-blue-500 text-white px-4 py-3 rounded flex items-center justify-center w-40"
-              onClick={() => navigate(`/chat/${userId}`)}
+              onClick={() => navigate(`/inbox`)}
             >
               <FaComment className="mr-2" /> <span className="px-2">Open Chat</span>
             </button>
