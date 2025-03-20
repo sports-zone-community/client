@@ -36,21 +36,16 @@ const PostOptions = ({ postId }: PostOptionsProps) => {
       toast.success(
         <ToastContent
           message="Post deleted successfully"
-          description="Your post has been deleted"
+          description=""
           type={ToastType.SUCCESS}
         />,
         toastConfig,
       );
     } catch (error) {
       toast.error(
-        <ToastContent
-          message="Error creating post!"
-          description="Please try again."
-          type={ToastType.ERROR}
-        />,
+        <ToastContent message="Could not delete post" description="" type={ToastType.ERROR} />,
         toastConfig,
       );
-      console.error('Error deleting post:', error);
     }
   };
 
