@@ -9,8 +9,11 @@ interface SocketEvents {
   'new message': ChatEvent;
   'unread message': UnreadMessageEvent;
   'group:joined': GroupJoinedEvent;
+  'chatCreated': Chat;
   'enterChat': { chatId: string; userId: string };
   'leaveChat': { userId: string; chatId: string };
+  'joinGroup': { userId: string; groupId: string };
+  'followUser': { userId: string; followedUserId: string };
   'error': Error;
   'disconnect': void;
 }
@@ -20,7 +23,6 @@ class SocketService {
   private messageHandlers: Set<(message: Message) => void> = new Set();
   private unreadMessageHandlers: Set<(data: UnreadMessageEvent) => void> = new Set();
   private messageReadHandlers: Set<(data: MessageReadEvent) => void> = new Set();
-  private newChatHandlers: Set<(chat: Chat) => void> = new Set();
   private activeChatId: string | null = null;
 
   connect(token: string) {
@@ -106,6 +108,13 @@ class SocketService {
     this.socket.emit('joinGroup', { userId, groupId });
   }
 
+  followUser(userId: string, followedUserId: string) {
+    if (!this.socket?.connected) {
+      throw new Error('Socket not connected');
+    }
+    this.socket.emit('followUser', { userId, followedUserId });
+  }
+
   onNewMessage(handler: (message: Message) => void) {
     this.messageHandlers.add(handler);
     return () => this.messageHandlers.delete(handler);
@@ -116,15 +125,16 @@ class SocketService {
     return () => this.unreadMessageHandlers.delete(handler);
   }
 
-  onNewChat(handler: (chat: Chat) => void) {
-    this.newChatHandlers.add(handler);
-    return () => this.newChatHandlers.delete(handler);
-  }
-
   onGroupJoined(handler: (data: GroupJoinedEvent) => void) {
     if (!this.socket) return () => {};
     this.socket.on('group:joined', handler);
     return () => this.socket?.off('group:joined', handler);
+  }
+
+  onChatCreated(handler: (chat: Chat) => void) {
+    if (!this.socket) return () => {};
+    this.socket.on('chatCreated', handler);
+    return () => this.socket?.off('chatCreated', handler);
   }
 
   onSocketError(handler: (error: Error) => void) {

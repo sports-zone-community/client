@@ -11,10 +11,9 @@ import { useAuth } from '../../shared/hooks/useAuth';
 
 const Inbox: React.FC = () => {
     const [selectedChat, setSelectedChat] = useState<string | null>(null);
-    const [chatFilter, setChatFilter] = useState<ChatFilter>(ChatFilter.DIRECT);
     const [searchTerm, setSearchTerm] = useState('');
     const [messageInput, setMessageInput] = useState('');
-    const { chats, getChats, isLoading, enterChat, sendMessage, messages } = useChats();
+    const { chats, getChats, isLoading, enterChat, sendMessage, messages, chatFilter, onChangeChatFilter } = useChats();
     const {user} = useAuth();
 
     const handleChatSelect = useCallback(async (chatId: string) => {
@@ -54,10 +53,6 @@ const Inbox: React.FC = () => {
     }, [chats, chatFilter, searchTerm]);
 
     const currentChat: Chat | undefined = chats.find((chat: Chat) => chat.chatId === selectedChat);
-
-    const onChangeChatFilter = (): void => {
-        setChatFilter(prev => prev === ChatFilter.DIRECT ? ChatFilter.GROUPS : ChatFilter.DIRECT);
-    };
 
     useEffect(() => {
         getChats(chatFilter === ChatFilter.GROUPS);

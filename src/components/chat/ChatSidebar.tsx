@@ -1,9 +1,9 @@
-import { IoIosArrowDown } from "react-icons/io";
-import { IoSearchOutline } from "react-icons/io5";
+import { IoIosArrowDown } from 'react-icons/io';
+import { IoSearchOutline } from 'react-icons/io5';
 import { Chat } from '../../shared/models/chat/Chat';
 import ChatListItem from './ChatListItem';
 import { ChatFilter } from '../../shared/enums/ChatFilter';
-import { useChats } from "../../shared/hooks/useChats";
+import { useChats } from '../../shared/hooks/useChats';
 
 interface ChatSidebarProps {
     chatFilter: ChatFilter;
@@ -26,7 +26,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 }: ChatSidebarProps) => {
     const {isLoading} = useChats();
     return (
-        <div className="w-80 bg-[#1a1a1a] border-r border-gray-700 flex flex-col">
+        <div className="w-80 bg-[#1a1a1a] border-r border-gray-700 flex flex-col overflow-y-auto">
             <div className="p-4 flex-shrink-0">
                 <button 
                     onClick={onFilterChange}
