@@ -2,7 +2,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Post from '../../components/post/Post.tsx';
-import { FaCog, FaPlus } from 'react-icons/fa';
+import { FaCog, FaPlus, FaUserPlus, FaUserMinus, FaComment } from 'react-icons/fa';
 import { config } from '../../config.ts';
 import { fetchUserById } from '../../features/api/user.ts';
 import { UserModel } from '../../shared/models';
@@ -19,12 +19,14 @@ const UserProfile = ({ profileType }: { profileType: 'own' | 'other' }) => {
   const [posts, setPosts] = useState<PostPreview[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
+  const [isFollowing, setIsFollowing] = useState<boolean>(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     loadUserProfile();
     setPage(1);
     loadPosts(1);
+    checkIfFollowing();
   }, [userId]);
 
   const loadUserProfile = async () => {
@@ -32,7 +34,6 @@ const UserProfile = ({ profileType }: { profileType: 'own' | 'other' }) => {
     setProfileUser(profileUser);
   };
 
-  // From here
   const loadMorePosts = async (page: number, userId: string) => {
     const newPosts = await fetchUserPosts(page, userId);
 
@@ -64,11 +65,23 @@ const UserProfile = ({ profileType }: { profileType: 'own' | 'other' }) => {
     );
   };
 
-  // To Here
-
   const loadPosts = async (newPage?: number): Promise<void> => {
     await loadMorePosts(newPage || page, userId);
     setPage(newPage ? newPage + 1 : (prevPage) => prevPage + 1);
+  };
+
+  const checkIfFollowing = async () => {
+    const updatedUser: UserModel | null = user && (await fetchUserById(user?._id));
+    if (updatedUser && updatedUser.following.includes(userId)) {
+      setIsFollowing(true);
+    } else {
+      setIsFollowing(false);
+    }
+  };
+
+  const toggleFollowUser = async () => {
+    await api.post(`/users/toggle-follow/${userId}`);
+    setIsFollowing((prev) => !prev);
   };
 
   if (!profileUser) return <div>Loading...</div>;
@@ -84,30 +97,49 @@ const UserProfile = ({ profileType }: { profileType: 'own' | 'other' }) => {
           <img
             src={profilePicture}
             alt={`${profileUser.username}'s profile`}
-            className="w-24 h-24 rounded-full"
+            className="w-32 h-32 rounded-full"
           />
           <div className="ml-4">
-            <h2 className="text-xl font-bold">@{profileUser.username}</h2>
-            <p className="text-sm">{profileUser.name}</p>
+            <h2 className="text-2xl font-bold">@{profileUser.username}</h2>
+            <p className="text-m">{profileUser.name}</p>
             <div className="flex space-x-4">
-              <p className="text-sm">{profileUser.following.length} Following</p>
+              <p className="text-m">{profileUser.following.length} Following</p>
             </div>
           </div>
         </div>
-        <div className="flex flex-col items-end justify-center w-2/3 space-y-4">
-          <button
-            className="bg-blue-500 text-white px-3 py-1 rounded flex items-center w-32"
-            onClick={() => navigate('/add-post')}
-          >
-            <FaPlus className="mr-2" /> <span className="ml-auto">Add Post</span>
-          </button>
-          <button
-            className="bg-gray-500 text-white px-3 py-1 rounded flex items-center w-32"
-            onClick={() => navigate('/edit-profile')}
-          >
-            <FaCog className="mr-2" /> <span className="ml-auto">Settings</span>
-          </button>
-        </div>
+        {profileType === 'own' && (
+          <div className="flex flex-col items-end justify-center w-2/3 space-y-4">
+            <button
+              className="bg-blue-500 text-white px-3 py-1 rounded flex items-center justify-between w-32"
+              onClick={() => navigate('/add-post')}
+            >
+              <FaPlus /> <span className="px-2">Add Post</span>
+            </button>
+            <button
+              className="bg-gray-500 text-white px-3 py-1 rounded flex items-center justify-between w-32"
+              onClick={() => navigate('/edit-profile')}
+            >
+              <FaCog /> <span className="px-2">Settings</span>
+            </button>
+          </div>
+        )}
+        {profileType === 'other' && (
+          <div className="flex flex-col items-end justify-center w-2/3 space-y-4">
+            <button
+              className={`bg-${isFollowing ? 'red' : 'green'}-500 text-white px-4 py-3 rounded flex items-center justify-center w-40`}
+              onClick={toggleFollowUser}
+            >
+              {isFollowing ? <FaUserMinus /> : <FaUserPlus />}
+              <span className="px-2">{isFollowing ? 'Unfollow' : 'Follow'}</span>
+            </button>
+            <button
+              className="bg-blue-500 text-white px-4 py-3 rounded flex items-center justify-center w-40"
+              onClick={() => navigate(`/chat/${userId}`)}
+            >
+              <FaComment className="mr-2" /> <span className="px-2">Open Chat</span>
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col w-full h-5/6 p-4 bg-gray-900 text-white">
