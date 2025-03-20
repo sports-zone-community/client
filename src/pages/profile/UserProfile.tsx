@@ -110,13 +110,13 @@ const UserProfile = ({ profileType }: { profileType: 'own' | 'other' }) => {
         {profileType === 'own' && (
           <div className="flex flex-col items-end justify-center w-2/3 space-y-4">
             <button
-              className="bg-blue-500 text-white px-3 py-1 rounded flex items-center justify-between w-32"
+              className="bg-blue-500 text-white px-4 py-3 rounded flex items-center justify-center w-40"
               onClick={() => navigate('/add-post')}
             >
               <FaPlus /> <span className="px-2">Add Post</span>
             </button>
             <button
-              className="bg-gray-500 text-white px-3 py-1 rounded flex items-center justify-between w-32"
+              className="bg-gray-500 text-white px-4 py-3 rounded flex items-center justify-center w-40"
               onClick={() => navigate('/edit-profile')}
             >
               <FaCog /> <span className="px-2">Settings</span>
