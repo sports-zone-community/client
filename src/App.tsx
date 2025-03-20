@@ -9,7 +9,6 @@ import Home from './components/home/Home';
 import Dashboard from './pages/dashboard/Dashboard';
 import Inbox from './pages/inbox/Inbox';
 import AddPost from './pages/add-post/AddPost';
-import Profile from './pages/profile/Profile';
 import AddGroup from './pages/add-group/AddGroup';
 import { ToastContainer } from 'react-toastify';
 import EditPost from './pages/edit-post/EditPost.tsx';
@@ -21,6 +20,8 @@ import { SocketProvider } from './services/socket/SocketContext';
 import EditProfile from './pages/edit-profile/EditProfile.tsx';
 import Search from './pages/search/Search.tsx';
 import { useState } from 'react';
+import UserProfile from './pages/profile/UserProfile.tsx';
+import GroupProfile from './pages/profile/GroupProfile.tsx';
 
 const publicRoutes = [
   { path: '/', element: <Home /> },
@@ -34,8 +35,10 @@ export const protectedRoutes = [
   { path: '/add-post', element: <AddPost /> },
   { path: '/edit-post/:postId', element: <EditPost /> },
   { path: '/add-group', element: <AddGroup /> },
-  { path: '/profile', element: <Profile /> },
+  { path: '/profile', element: <UserProfile profileType={'own'} /> },
   { path: '/edit-profile', element: <EditProfile /> },
+  { path: '/user/:userId', element: <UserProfile profileType={'other'} /> },
+  { path: '/group/:groupId', element: <GroupProfile /> },
 ];
 
 const App = () => {

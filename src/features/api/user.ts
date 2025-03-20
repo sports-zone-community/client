@@ -1,5 +1,5 @@
 import api from './api.ts';
-import { UserModel } from '../../shared/models/User.ts';
+import { UserModel } from '../../shared/models';
 
 export const fetchUserById = async (userId: string): Promise<UserModel> => {
   const response = await api.get<UserModel>(`users/details`, {
