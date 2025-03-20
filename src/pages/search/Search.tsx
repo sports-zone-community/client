@@ -5,6 +5,7 @@ import { SearchResultModel } from '../../shared/models/Search.ts';
 import SearchResult from './SearchResult.tsx';
 import { AxiosResponse } from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { config } from "../../config.ts";
 
 interface SearchProps {
   visible: boolean;
@@ -67,8 +68,8 @@ const Search: React.FC<SearchProps> = ({ visible, onClose }) => {
         const response: AxiosResponse<SearchResultModel[]> = await api.get(`/search/${query}`);
         const parserResponse: SearchResultModel[] = response.data.map(
           (searchResult: SearchResultModel): SearchResultModel =>
-            searchResult.image.includes('uploads\\')
-              ? { ...searchResult, image: `${api.defaults.baseURL}/${searchResult.image}` }
+            searchResult.image.includes('uploads')
+              ? { ...searchResult, image: `${config.apiUrl}/${searchResult.image}` }
               : searchResult,
         );
         setResults(parserResponse);
