@@ -6,12 +6,14 @@ import { ChatsContext } from './ChatsContext';
 import { useAuth } from '../../../shared/hooks/useAuth';
 import { useSocket } from '../../../services/socket/SocketContext';
 import { GroupJoinedEvent, UnreadMessageEvent } from '../../../shared/models/chat/SocketEvents';
+import { ChatFilter } from '../../../shared/enums/ChatFilter';
 
 export const ChatsProvider = ({ children }: { children: ReactNode }) => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [activeChat, setActiveChat] = useState<string | null>(null);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const [chatFilter, setChatFilter] = useState<ChatFilter>(ChatFilter.DIRECT);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
@@ -256,6 +258,10 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
     });
   }, [activeChat, user, chats, getChats, socket, scrollToBottom]);
 
+  const onChangeChatFilter = useCallback((): void => {
+    setChatFilter(prev => prev === ChatFilter.DIRECT ? ChatFilter.GROUPS : ChatFilter.DIRECT);
+  }, []);
+
   useEffect(() => {
     if (!user) return;
 
@@ -324,24 +330,6 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    const handleNewChat = (chat: Chat) => {
-      const isGroup: boolean = chat.isGroupChat || false;
-      
-      setChats(prev => {
-
-        const exists: boolean = prev.some((c: Chat) => c.chatId === chat.chatId);
-        if (exists) return prev;
-        
-        const currentFilter: boolean = prev.some((c: Chat) => c.isGroupChat) === isGroup;
-        if (!currentFilter) {
-          getChats(isGroup);
-          return prev;
-        }
-        
-        return [chat, ...prev];
-      });
-    };
-
     const handleMessagesRead = (data: { chatId: string, userId: string }) => {
       if (data.chatId === activeChat && data.userId !== user._id) {
         setMessages(prev => prev.map(message => ({
@@ -353,6 +341,9 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const handleChatCreated = (chat: Chat): void => {
+      if (chatFilter === ChatFilter.GROUPS && !chat.isGroupChat 
+          || chatFilter === ChatFilter.DIRECT && chat.isGroupChat) return;
+
       setChats(prev => {
         const currentFilter: boolean = prev.some((c: Chat) => c.isGroupChat) === chat.isGroupChat;
         if (!currentFilter) {
@@ -371,7 +362,6 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
     const unsubscribeNewMessage = socket.onNewMessage(handleNewMessage);
     const unsubscribeUnreadMessage = socket.onUnreadMessage(handleUnreadMessage);
     const unsubscribeGroupJoined = socket.onGroupJoined(handleGroupJoined);
-    const unsubscribeNewChat = socket.onNewChat(handleNewChat);
     const unsubscribeEnterChat = socket.onEnterChat(handleMessagesRead);
     const unsubscribeError = socket.onSocketError(handleError);
     const unsubscribeChatCreated = socket.onChatCreated(handleChatCreated);
@@ -379,7 +369,6 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
       unsubscribeNewMessage();
       unsubscribeUnreadMessage();
       unsubscribeGroupJoined();
-      unsubscribeNewChat();
       unsubscribeError();
       unsubscribeEnterChat();
       unsubscribeChatCreated();
@@ -423,6 +412,8 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
       unreadCounts,
       isLoading,
       error,
+      chatFilter,
+      setChatFilter,
       enterChat,
       setError,
       getChatMessagesById,
@@ -430,7 +421,8 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
       sendMessage,
       getChats,
       joinGroup,
-      followUser
+      followUser,
+      onChangeChatFilter
     }}>
       {children}
     </ChatsContext.Provider>

@@ -23,7 +23,6 @@ class SocketService {
   private messageHandlers: Set<(message: Message) => void> = new Set();
   private unreadMessageHandlers: Set<(data: UnreadMessageEvent) => void> = new Set();
   private messageReadHandlers: Set<(data: MessageReadEvent) => void> = new Set();
-  private newChatHandlers: Set<(chat: Chat) => void> = new Set();
   private activeChatId: string | null = null;
 
   connect(token: string) {
@@ -124,11 +123,6 @@ class SocketService {
   onUnreadMessage(handler: (data: UnreadMessageEvent) => void) {
     this.unreadMessageHandlers.add(handler);
     return () => this.unreadMessageHandlers.delete(handler);
-  }
-
-  onNewChat(handler: (chat: Chat) => void) {
-    this.newChatHandlers.add(handler);
-    return () => this.newChatHandlers.delete(handler);
   }
 
   onGroupJoined(handler: (data: GroupJoinedEvent) => void) {
