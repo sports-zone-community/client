@@ -91,24 +91,22 @@ const UserProfile = ({ profileType }: { profileType: 'own' | 'other' }) => {
     : `${config.apiUrl}/${profileUser.picture}`;
 
   return (
-    <div className="flex flex-col items-center w-full h-full">
-      <div className="flex w-full h-1/6 p-4 bg-gray-800 text-white">
-        <div className="flex items-center w-1/3">
+    <div className="flex flex-col items-center h-full bg-gray-900">
+      <div className="flex w-full p-8 bg-gray-800 text-white justify-between">
+        <div className="flex items-center">
           <img
             src={profilePicture}
             alt={`${profileUser.username}'s profile`}
             className="w-32 h-32 rounded-full"
           />
-          <div className="ml-4">
-            <h2 className="text-2xl font-bold">@{profileUser.username}</h2>
-            <p className="text-m">{profileUser.name}</p>
-            <div className="flex space-x-4">
-              <p className="text-m">{profileUser.following.length} Following</p>
-            </div>
+          <div className="ml-8">
+            <h2 className="text-2xl font-bold">{profileUser.name}</h2>
+            <p className="text-m my-2">@{profileUser.username}</p>
+            <p className="text-m">{profileUser.following.length} Following</p>
           </div>
         </div>
         {profileType === 'own' && (
-          <div className="flex flex-col items-end justify-center w-2/3 space-y-4">
+          <div className="flex flex-col justify-center space-y-4">
             <button
               className="bg-blue-500 text-white px-4 py-3 rounded flex items-center justify-center w-40"
               onClick={() => navigate('/add-post')}
@@ -124,7 +122,7 @@ const UserProfile = ({ profileType }: { profileType: 'own' | 'other' }) => {
           </div>
         )}
         {profileType === 'other' && (
-          <div className="flex flex-col items-end justify-center w-2/3 space-y-4">
+          <div className="flex flex-col justify-center space-y-4">
             <button
               className={`bg-${isFollowing ? 'red' : 'green'}-500 text-white px-4 py-3 rounded flex items-center justify-center w-40`}
               onClick={toggleFollowUser}
@@ -142,7 +140,7 @@ const UserProfile = ({ profileType }: { profileType: 'own' | 'other' }) => {
         )}
       </div>
 
-      <div className="flex flex-col w-full h-5/6 p-4 bg-gray-900 text-white">
+      <div className="flex flex-col w-full p-4 bg-gray-900 text-white">
         <h2 className="text-center text-2xl font-bold mb-4">My Posts</h2>
         <InfiniteScroll
           dataLength={posts.length}
@@ -158,8 +156,9 @@ const UserProfile = ({ profileType }: { profileType: 'own' | 'other' }) => {
               <p className="text-white">No more posts to show</p>
             </div>
           }
+          scrollableTarget="scrollableDiv"
         >
-          <div className="flex flex-col gap-4 items-center">
+          <div className="flex flex-col gap-4 items-center text-black">
             {posts.map((post) => (
               <Post key={post._id} post={post} />
             ))}
