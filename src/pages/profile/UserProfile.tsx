@@ -10,10 +10,12 @@ import { PostModel, PostPreview } from '../../shared/models/Post.ts';
 import { fetchCommentsByPostId } from '../../features/api/comments.ts';
 import api from '../../features/api/api.ts';
 import { useAuth } from '../../shared/hooks/useAuth.ts';
+import { useChats } from '../../shared/hooks/useChats.ts';
 
 const UserProfile = ({ profileType }: { profileType: 'own' | 'other' }) => {
   const { userId: paramUserId } = useParams();
   const { user } = useAuth();
+  const { followUser } = useChats();
   const userId: string = paramUserId || user?._id || '';
   const [profileUser, setProfileUser] = useState<UserModel | null>(null);
   const [posts, setPosts] = useState<PostPreview[]>([]);
@@ -77,6 +79,8 @@ const UserProfile = ({ profileType }: { profileType: 'own' | 'other' }) => {
     const updatedUser: UserModel | null = user && (await fetchUserById(user?._id));
     if (updatedUser && updatedUser.following.includes(userId)) {
       setIsFollowing(true);
+      // LOOK HERE OR
+      await followUser(userId);
     } else {
       setIsFollowing(false);
     }
