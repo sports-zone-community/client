@@ -152,7 +152,6 @@ class SocketService {
   }
 
   followUser(userId: string, followedUserId: string) {
-    console.log('following user', userId, followedUserId);
     if (!this.socket?.connected) {
       throw new Error('Socket not connected');
     }
@@ -160,7 +159,6 @@ class SocketService {
   }
 
   unfollowUser(userId: string, followedUserId: string) {
-    console.log('unfollowing user', userId, followedUserId);
     if (!this.socket?.connected) {
       throw new Error('Socket not connected');
     }
