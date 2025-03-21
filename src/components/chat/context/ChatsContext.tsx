@@ -18,8 +18,8 @@ interface ChatsContextType {
   leaveChat: () => void,
   setError: (error: string | null) => void;
   sendMessage: (content: string, chatId: string, isGroup: boolean) => Promise<void>;
-  joinGroup: (groupId: string) => Promise<void>;
-  followUser: (followedUserId: string) => Promise<void>;
+  toggleJoinGroup: (groupId: string, isJoin: boolean) => Promise<void>;
+  toggleFollowUser: (followedUserId: string, isFollow: boolean) => Promise<void>;
 }
 
 export const ChatsContext = createContext<ChatsContextType | undefined>(undefined);

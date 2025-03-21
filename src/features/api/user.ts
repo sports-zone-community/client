@@ -31,3 +31,7 @@ export const updateUser = async ({
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 };
+
+export const toggleFollowUserById = async (userId: string): Promise<void> => {
+  await api.post(`/users/toggle-follow/${userId}`);
+};

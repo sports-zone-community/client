@@ -2,7 +2,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Post from '../../components/post/Post.tsx';
-import { FaCog, FaPlus, FaUserPlus, FaUserMinus, FaComment } from 'react-icons/fa';
+import { FaCog, FaPlus, FaUserPlus, FaUserMinus } from 'react-icons/fa';
 import { config } from '../../config.ts';
 import { fetchUserById } from '../../features/api/user.ts';
 import { UserModel } from '../../shared/models';
@@ -15,13 +15,14 @@ import { useChats } from '../../shared/hooks/useChats.ts';
 const UserProfile = ({ profileType }: { profileType: 'own' | 'other' }) => {
   const { userId: paramUserId } = useParams();
   const { user } = useAuth();
-  const { followUser } = useChats();
+  const { toggleFollowUser } = useChats();
   const userId: string = paramUserId || user?._id || '';
   const [profileUser, setProfileUser] = useState<UserModel | null>(null);
   const [posts, setPosts] = useState<PostPreview[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
+  const [followToggled, setFollowToggled] = useState<boolean>(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -79,17 +80,26 @@ const UserProfile = ({ profileType }: { profileType: 'own' | 'other' }) => {
     const updatedUser: UserModel | null = user && (await fetchUserById(user?._id));
     if (updatedUser && updatedUser.following.includes(userId)) {
       setIsFollowing(true);
-      // LOOK HERE OR
-      await followUser(userId);
     } else {
       setIsFollowing(false);
     }
   };
 
-  const toggleFollowUser = async () => {
-    await api.post(`/users/toggle-follow/${userId}`);
+  const toggleFollow = async () => {
+    setFollowToggled(true);
     setIsFollowing((prev) => !prev);
   };
+
+  useEffect(() => {
+    const toggleFollow = async () => {
+      await toggleFollowUser(userId, isFollowing);
+    };
+
+    if (followToggled) {
+      toggleFollow();
+      setFollowToggled(false);
+    }
+  }, [isFollowing, followToggled]);
 
   if (!profileUser) return <div>Loading...</div>;
 
@@ -132,16 +142,10 @@ const UserProfile = ({ profileType }: { profileType: 'own' | 'other' }) => {
           <div className="flex flex-col justify-center space-y-4">
             <button
               className={`bg-${isFollowing ? 'red' : 'green'}-500 text-white px-4 py-3 rounded flex items-center justify-center w-40`}
-              onClick={toggleFollowUser}
+              onClick={toggleFollow}
             >
               {isFollowing ? <FaUserMinus /> : <FaUserPlus />}
               <span className="px-2">{isFollowing ? 'Unfollow' : 'Follow'}</span>
-            </button>
-            <button
-              className="bg-blue-500 text-white px-4 py-3 rounded flex items-center justify-center w-40"
-              onClick={() => navigate(`/inbox`)}
-            >
-              <FaComment className="mr-2" /> <span className="px-2">Open Chat</span>
             </button>
           </div>
         )}
