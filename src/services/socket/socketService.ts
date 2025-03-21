@@ -13,7 +13,9 @@ interface SocketEvents {
   'enterChat': { chatId: string; userId: string };
   'leaveChat': { userId: string; chatId: string };
   'joinGroup': { userId: string; groupId: string };
+  'leaveGroup': { userId: string; groupId: string };
   'followUser': { userId: string; followedUserId: string };
+  'unfollowUser': { userId: string; followedUserId: string };
   'error': Error;
   'disconnect': void;
 }
@@ -24,7 +26,8 @@ class SocketService {
   private unreadMessageHandlers: Set<(data: UnreadMessageEvent) => void> = new Set();
   private messageReadHandlers: Set<(data: MessageReadEvent) => void> = new Set();
   private activeChatId: string | null = null;
-
+  private groupJoinedHandlers: Set<(data: GroupJoinedEvent) => void> = new Set();
+  private chatCreatedHandlers: Set<(chat: Chat) => void> = new Set();
   connect(token: string) {
     if (this.socket?.connected) return;
 
@@ -69,13 +72,46 @@ class SocketService {
     this.socket.on('error', (error: Error) => {
       console.error('Socket error:', error);
     });
+
+    this.socket.on('group:joined', (data: GroupJoinedEvent) => {
+      this.groupJoinedHandlers.forEach(handler => handler(data));
+    });
+
+    this.socket.on('chatCreated', (chat: Chat) => {
+      this.chatCreatedHandlers.forEach(handler => handler(chat));
+    });
   }
 
-  sendPrivateMessage(content: string, to: string, senderName: string) {
+  onNewMessage(handler: (message: Message) => void) {
+    this.messageHandlers.add(handler);
+    return () => this.messageHandlers.delete(handler);
+  }
+
+  onUnreadMessage(handler: (data: UnreadMessageEvent) => void) {
+    this.unreadMessageHandlers.add(handler);
+    return () => this.unreadMessageHandlers.delete(handler);
+  }
+
+  onGroupJoined(handler: (data: GroupJoinedEvent) => void) {
+    this.groupJoinedHandlers.add(handler);
+    return () => this.groupJoinedHandlers.delete(handler);
+  }
+
+  onChatCreated(handler: (chat: Chat) => void) {
+    this.chatCreatedHandlers.add(handler);
+    return () => this.chatCreatedHandlers.delete(handler);
+  }
+
+  onMessagesRead(handler: (data: MessageReadEvent) => void) {
+    this.messageReadHandlers.add(handler);
+    return () => this.messageReadHandlers.delete(handler);
+  }
+
+  sendPrivateMessage(content: string, chatId: string, senderName: string) {
     if (!this.socket?.connected) {
       throw new Error('Socket not connected');
     }
-    this.socket.emit('private message', { content, to, senderName });
+    this.socket.emit('private message', { content, chatId, senderName });
   }
 
   sendGroupMessage(content: string, groupId: string, senderName: string) {
@@ -108,6 +144,13 @@ class SocketService {
     this.socket.emit('joinGroup', { userId, groupId });
   }
 
+  leaveGroup(userId: string, groupId: string) {
+    if (!this.socket?.connected) {
+      throw new Error('Socket not connected');
+    }
+    this.socket.emit('leaveGroup', { userId, groupId });
+  }
+
   followUser(userId: string, followedUserId: string) {
     if (!this.socket?.connected) {
       throw new Error('Socket not connected');
@@ -115,37 +158,17 @@ class SocketService {
     this.socket.emit('followUser', { userId, followedUserId });
   }
 
-  onNewMessage(handler: (message: Message) => void) {
-    this.messageHandlers.add(handler);
-    return () => this.messageHandlers.delete(handler);
-  }
-
-  onUnreadMessage(handler: (data: UnreadMessageEvent) => void) {
-    this.unreadMessageHandlers.add(handler);
-    return () => this.unreadMessageHandlers.delete(handler);
-  }
-
-  onGroupJoined(handler: (data: GroupJoinedEvent) => void) {
-    if (!this.socket) return () => {};
-    this.socket.on('group:joined', handler);
-    return () => this.socket?.off('group:joined', handler);
-  }
-
-  onChatCreated(handler: (chat: Chat) => void) {
-    if (!this.socket) return () => {};
-    this.socket.on('chatCreated', handler);
-    return () => this.socket?.off('chatCreated', handler);
+  unfollowUser(userId: string, followedUserId: string) {
+    if (!this.socket?.connected) {
+      throw new Error('Socket not connected');
+    }
+    this.socket.emit('unfollowUser', { userId, followedUserId });
   }
 
   onSocketError(handler: (error: Error) => void) {
     if (!this.socket) return () => {};
     this.socket.on('error', handler);
     return () => this.socket?.off('error', handler);
-  }
-
-  onMessagesRead(handler: (data: MessageReadEvent) => void) {
-    this.messageReadHandlers.add(handler);
-    return () => this.messageReadHandlers.delete(handler);
   }
 
   isConnected(): boolean {
@@ -174,12 +197,6 @@ class SocketService {
   ) {
     if (!this.socket) return;
     this.socket.off(event, handler);
-  }
-
-  onEnterChat(handler: (data: { chatId: string, userId: string }) => void) {
-    if (!this.socket) return () => {};
-    this.socket.on('enterChat', handler);
-    return () => this.socket?.off('enterChat', handler);
   }
 }
 

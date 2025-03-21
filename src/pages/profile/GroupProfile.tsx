@@ -1,8 +1,8 @@
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import Post from '../../components/post/Post.tsx';
-import { FaComment, FaUserMinus, FaUserPlus } from 'react-icons/fa';
+import { FaUserMinus, FaUserPlus } from 'react-icons/fa';
 import { config } from '../../config.ts';
 import { GroupModel, UserModel } from '../../shared/models';
 import { PostModel, PostPreview } from '../../shared/models/Post.ts';
@@ -10,16 +10,17 @@ import { fetchCommentsByPostId } from '../../features/api/comments.ts';
 import api from '../../features/api/api.ts';
 import { fetchUserById } from '../../features/api/user.ts';
 import { useAuth } from '../../shared/hooks/useAuth.ts';
-
+import { useChats } from '../../shared/hooks/useChats.ts';
 const GroupProfile = () => {
   const { groupId } = useParams();
   const { user } = useAuth();
+  const { toggleJoinGroup } = useChats();
   const [group, setGroup] = useState<GroupModel | null>(null);
   const [posts, setPosts] = useState<PostPreview[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [isMember, setIsMember] = useState<boolean>(false);
-  const navigate = useNavigate();
+  const [membershipToggled, setMembershipToggled] = useState<boolean>(false);
 
   useEffect(() => {
     loadGroupProfile();
@@ -36,7 +37,6 @@ const GroupProfile = () => {
   };
 
   const loadGroupProfile = async () => {
-    console.log('new group id', groupId);
     const group: GroupModel = await fetchGroupById(groupId!);
     setGroup(group);
   };
@@ -88,9 +88,20 @@ const GroupProfile = () => {
   };
 
   const toggleMembership = async () => {
-    await api.post(`/groups/toggle-join/${groupId}`);
     setIsMember((prev) => !prev);
+    setMembershipToggled(true);
   };
+
+  useEffect(() => {
+    const joinGroup = async (): Promise<void> => {
+      await toggleJoinGroup(groupId!, isMember);
+    };
+
+    if (membershipToggled) {
+      joinGroup();
+      setMembershipToggled(false);
+    }
+  }, [isMember, membershipToggled]);
 
   if (!group) return <div>Loading...</div>;
 
@@ -119,12 +130,6 @@ const GroupProfile = () => {
           >
             {isMember ? <FaUserMinus /> : <FaUserPlus />}
             <span className="px-2">{isMember ? 'Leave Group' : 'Join Group'}</span>
-          </button>
-          <button
-            className="bg-blue-500 text-white px-4 py-3 rounded flex items-center justify-center w-40"
-            onClick={() => navigate(`/inbox`)}
-          >
-            <FaComment className="mr-2" /> <span className="px-2">Open Chat</span>
           </button>
         </div>
       </div>

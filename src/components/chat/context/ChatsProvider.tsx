@@ -7,6 +7,7 @@ import { useAuth } from '../../../shared/hooks/useAuth';
 import { useSocket } from '../../../services/socket/SocketContext';
 import { GroupJoinedEvent, UnreadMessageEvent } from '../../../shared/models/chat/SocketEvents';
 import { ChatFilter } from '../../../shared/enums/ChatFilter';
+import { toggleFollowUserById } from '../../../features/api/user';
 
 export const ChatsProvider = ({ children }: { children: ReactNode }) => {
   const [chats, setChats] = useState<Chat[]>([]);
@@ -81,12 +82,14 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [activeChat, user, socket, getChatMessagesById]);
 
-  const joinGroup = useCallback(async (groupId: string) => {
+  const toggleJoinGroup = useCallback(async (groupId: string, isJoin: boolean) => {
     if (!user) return;
     
     try {
       setIsLoading(true);
-      socket.joinGroup(user._id, groupId);
+      const action: void = isJoin ? socket.joinGroup(user._id, groupId) : socket.leaveGroup(user._id, groupId);
+      await action;
+      await joinGroupById(groupId);
     } catch (err) {
       console.error('Error joining group:', err);
       setError('Failed to join group');
@@ -185,10 +188,12 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user, socket, scrollToBottom]);
 
-  const followUser = useCallback(async (followedUserId: string): Promise<void> => {
+  const toggleFollowUser = useCallback(async (followedUserId: string, isFollow: boolean): Promise<void> => {
     if (!user) return;
     try {
-      socket.followUser(user._id, followedUserId);
+      const action: void = isFollow ? socket.followUser(user._id, followedUserId) : socket.unfollowUser(user._id, followedUserId);
+      await action;
+      await toggleFollowUserById(followedUserId);
     } catch (err) {
       console.error('Error following user:', err);
       setError('Failed to follow user');
@@ -196,18 +201,35 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
   }, [user, socket]);
 
   const handleNewMessage = useCallback(async (message: Message) => {
-    console.log('New message received:', message, 'Active chat:', activeChat);
-    
+    message = {
+      ...message,
+      chatId: activeChat || message.chatId
+    }  
     const chatExists: boolean = chats.some(chat => chat.chatId === message.chatId);
     const isDirectMessage: boolean = !chats.find(chat => chat.chatId === message.chatId)?.isGroupChat;
+
+    const newMessage: Message = {
+      messageId: Date.now().toString(),
+      chatId: activeChat || message.chatId,
+      content: message.content,
+      sender: {
+        id: message.sender.id,
+        name: message.sender.name,
+        username: message.sender.username
+      },
+      timestamp: message.timestamp,
+      formattedTime: message.formattedTime,
+      isRead: false,
+      read: []
+    };
     
     if (!chatExists && isDirectMessage) {
+      console.log('new direct message', message);
       await getChats(false);
     }
-
-    if (message.chatId === activeChat) {
+    if (activeChat) {
       setMessages(prev => {
-        const newMessages = [...prev, message];
+        const newMessages = [...prev, newMessage];
         scrollToBottom();
         return newMessages;
       });
@@ -266,7 +288,6 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
     if (!user) return;
 
     const handleUnreadMessage = (data: UnreadMessageEvent) => {
-      
       if (data.chatId !== activeChat) {
         setUnreadCounts(prev => ({
           ...prev,
@@ -324,19 +345,8 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const handleGroupJoined = async (data: GroupJoinedEvent) => {
-      if (data.success) {
+      if (data.success && chatFilter === ChatFilter.GROUPS) {
         getChats(true);
-        await joinGroupById(data.groupId);
-      }
-    };
-
-    const handleMessagesRead = (data: { chatId: string, userId: string }) => {
-      if (data.chatId === activeChat && data.userId !== user._id) {
-        setMessages(prev => prev.map(message => ({
-          ...message,
-          read: [...(message.read || []), data.userId],
-          isRead: true
-        })));
       }
     };
 
@@ -362,7 +372,6 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
     const unsubscribeNewMessage = socket.onNewMessage(handleNewMessage);
     const unsubscribeUnreadMessage = socket.onUnreadMessage(handleUnreadMessage);
     const unsubscribeGroupJoined = socket.onGroupJoined(handleGroupJoined);
-    const unsubscribeEnterChat = socket.onEnterChat(handleMessagesRead);
     const unsubscribeError = socket.onSocketError(handleError);
     const unsubscribeChatCreated = socket.onChatCreated(handleChatCreated);
     return () => {
@@ -370,13 +379,12 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
       unsubscribeUnreadMessage();
       unsubscribeGroupJoined();
       unsubscribeError();
-      unsubscribeEnterChat();
       unsubscribeChatCreated();
       if (activeChat) {
         leaveChat();
       }
     };
-  }, [user, socket, activeChat, getChats, enterChat, joinGroup]);
+  }, [user, socket, activeChat, getChats, enterChat, toggleJoinGroup]);
 
   const leaveChat = useCallback(() => {
     if (activeChat && user) {
@@ -420,8 +428,8 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
       leaveChat,
       sendMessage,
       getChats,
-      joinGroup,
-      followUser,
+      toggleJoinGroup,
+      toggleFollowUser,
       onChangeChatFilter
     }}>
       {children}
