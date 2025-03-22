@@ -16,7 +16,7 @@ const editProfileSchema = z.object({
   username: z.string().nonempty({ message: 'Username is required' }),
   name: z.string().nonempty({ message: 'Name is required' }),
   email: z.string().email({ message: 'Invalid email address' }),
-  picture: z.instanceof(File),
+  picture: z.instanceof(File).optional(),
 });
 
 export type EditProfileFormInputs = z.infer<typeof editProfileSchema>;
@@ -49,10 +49,13 @@ const EditProfile = () => {
   }, [user, setValue]);
 
   const onSubmitForm = async (data: EditProfileFormInputs) => {
-    const { username, name, email, picture } = data;
-
     try {
-      await updateUser({ username, name, email, picture });
+      const username = data.username ?? undefined;
+      const name = data.name ?? undefined;
+      const email = data.email ?? undefined;
+      const image = data.picture instanceof File ? data.picture : undefined;
+
+      await updateUser(username, name, email, image);
 
       toast.success(
         <ToastContent

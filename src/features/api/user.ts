@@ -8,26 +8,21 @@ export const fetchUserById = async (userId: string): Promise<UserModel> => {
   return response.data;
 };
 
-interface UpdateUserParams {
-  username: string;
-  name: string;
-  email: string;
-  picture: File;
-}
-
-export const updateUser = async ({
-  username,
-  name,
-  email,
-  picture,
-}: UpdateUserParams): Promise<void> => {
+export const updateUser = async (
+  username?: string,
+  name?: string,
+  email?: string,
+  image?: File,
+): Promise<void> => {
   const formData = new FormData();
-  formData.append('username', username);
-  formData.append('name', name);
-  formData.append('email', email);
-  formData.append('image', picture);
+  if (username) formData.append('username', username);
+  if (name) formData.append('name', name);
+  if (email) formData.append('email', email);
+  if (image) formData.append('image', image);
 
-  await api.put('/users/update', formData, {
+  console.log({ formData });
+
+  await api.put<UserModel>('/users/update', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 };
