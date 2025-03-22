@@ -1,7 +1,7 @@
 import io from 'socket.io-client';
 import {Socket} from 'socket.io-client';
 import { config } from '../../config';
-import { Chat, Message } from '../../shared/models';
+import { Chat } from '../../shared/models';
 import { ChatEvent, UnreadMessageEvent, GroupJoinedEvent, MessageReadEvent } from '../../shared/models/chat/SocketEvents';
 
 interface SocketEvents {
@@ -22,7 +22,7 @@ interface SocketEvents {
 
 class SocketService {
   private socket: typeof Socket | null = null;
-  private messageHandlers: Set<(message: Message) => void> = new Set();
+  private messageHandlers: Set<(event: ChatEvent) => void> = new Set();
   private unreadMessageHandlers: Set<(data: UnreadMessageEvent) => void> = new Set();
   private messageReadHandlers: Set<(data: MessageReadEvent) => void> = new Set();
   private activeChatId: string | null = null;
@@ -58,7 +58,7 @@ class SocketService {
     });
 
     this.socket.on('new message', (event: ChatEvent) => {
-      this.messageHandlers.forEach(handler => handler(event.message));
+      this.messageHandlers.forEach(handler => handler(event));
     });
 
     this.socket.on('unread message', (data: UnreadMessageEvent) => {
@@ -82,7 +82,7 @@ class SocketService {
     });
   }
 
-  onNewMessage(handler: (message: Message) => void) {
+  onNewMessage(handler: (event: ChatEvent) => void) {
     this.messageHandlers.add(handler);
     return () => this.messageHandlers.delete(handler);
   }

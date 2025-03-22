@@ -5,7 +5,7 @@ import { joinGroupById } from '../../../features/api/groups';
 import { ChatsContext } from './ChatsContext';
 import { useAuth } from '../../../shared/hooks/useAuth';
 import { useSocket } from '../../../services/socket/SocketContext';
-import { GroupJoinedEvent, UnreadMessageEvent } from '../../../shared/models/chat/SocketEvents';
+import { ChatEvent, GroupJoinedEvent, UnreadMessageEvent } from '../../../shared/models/chat/SocketEvents';
 import { ChatFilter } from '../../../shared/enums/ChatFilter';
 import { toggleFollowUserById } from '../../../features/api/user';
 
@@ -200,17 +200,15 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user, socket]);
 
-  const handleNewMessage = useCallback(async (message: Message) => {
-    message = {
-      ...message,
-      chatId: activeChat || message.chatId
-    }  
-    const chatExists: boolean = chats.some(chat => chat.chatId === message.chatId);
-    const isDirectMessage: boolean = !chats.find(chat => chat.chatId === message.chatId)?.isGroupChat;
+  const handleNewMessage = useCallback(async (event: ChatEvent) => {
+    const message = event.message;
+
+    const chatExists: boolean = chats.some(chat => chat.chatId === event.chatId);
+    const isDirectMessage: boolean = !chats.find(chat => chat.chatId === event.chatId)?.isGroupChat;
 
     const newMessage: Message = {
       messageId: Date.now().toString(),
-      chatId: activeChat || message.chatId,
+      chatId: event.chatId,
       content: message.content,
       sender: {
         id: message.sender.id,
@@ -224,10 +222,9 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
     };
     
     if (!chatExists && isDirectMessage) {
-      console.log('new direct message', message);
       await getChats(false);
     }
-    if (activeChat) {
+    if (activeChat === event.chatId) {
       setMessages(prev => {
         const newMessages = [...prev, newMessage];
         scrollToBottom();
@@ -235,23 +232,23 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
       });
       
       if (message.sender.id !== user?._id) {
-        socket.enterChat(message.chatId);
+        socket.enterChat(event.chatId);
       }
     } 
     else if (message.sender.id !== user?._id) {
       setUnreadCounts(prev => ({
         ...prev,
-        [message.chatId]: (prev[message.chatId] || 0) + 1
+        [event.chatId]: (prev[event.chatId] || 0) + 1
       }));
     }
     
     setChats(prev => {
       const updatedChats = [...prev];
-      const chatIndex = updatedChats.findIndex(chat => chat.chatId === message.chatId);
+      const chatIndex = updatedChats.findIndex(chat => chat.chatId === event.chatId);
       
       if (chatIndex === -1 && isDirectMessage) {
         const newChat: Chat = {
-          chatId: message.chatId,
+          chatId: event.chatId,
           participants: [
             message.sender.id,
             user?._id || ''
@@ -268,7 +265,7 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
       if (chatIndex !== -1) {
         const chat = { ...updatedChats[chatIndex], lastMessage: message };
         
-        if (message.chatId !== activeChat && message.sender.id !== user?._id) {
+        if (event.chatId !== activeChat && message.sender.id !== user?._id) {
           chat.unreadCount = (chat.unreadCount || 0) + 1;
         }
         
