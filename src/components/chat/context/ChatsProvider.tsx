@@ -202,7 +202,6 @@ export const ChatsProvider = ({ children }: { children: ReactNode }) => {
 
   const handleNewMessage = useCallback(async (event: ChatEvent) => {
     const message = event.message;
-    console.log('new message', event);
 
     const chatExists: boolean = chats.some(chat => chat.chatId === event.chatId);
     const isDirectMessage: boolean = !chats.find(chat => chat.chatId === event.chatId)?.isGroupChat;
