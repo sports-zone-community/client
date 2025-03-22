@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { z } from 'zod';
+import { z } from "zod";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../shared/hooks/useAuth';
-import { config } from '../../config';
 import { ToastContent } from '../../components/toastContent/toastContent.tsx';
 import { ToastType } from '../../shared/enums/ToastType.ts';
 import { updateUser } from '../../features/api/user.ts';
@@ -16,7 +15,7 @@ const editProfileSchema = z.object({
   username: z.string().nonempty({ message: 'Username is required' }),
   name: z.string().nonempty({ message: 'Name is required' }),
   email: z.string().email({ message: 'Invalid email address' }),
-  picture: z.instanceof(File),
+  picture: z.any().optional(),
 });
 
 export type EditProfileFormInputs = z.infer<typeof editProfileSchema>;
@@ -42,17 +41,17 @@ const EditProfile = () => {
       setValue('username', user.username);
       setValue('name', user.name);
       setValue('email', user.email);
-      setPreviewImage(
-        user.picture.startsWith('https') ? user.picture : `${config.apiUrl}/${user.picture}`,
-      );
     }
   }, [user, setValue]);
 
   const onSubmitForm = async (data: EditProfileFormInputs) => {
-    const { username, name, email, picture } = data;
-
     try {
-      await updateUser({ username, name, email, picture });
+      const username = data.username ?? undefined;
+      const name = data.name ?? undefined;
+      const email = data.email ?? undefined;
+      const image = data.picture instanceof File ? data.picture : undefined;
+
+      await updateUser(username, name, email, image);
 
       toast.success(
         <ToastContent
@@ -121,7 +120,6 @@ const EditProfile = () => {
               setPreviewImage={setPreviewImage}
               registration={register('picture')}
               setValue={setValue}
-              error={errors.picture}
             />
 
             <motion.button
