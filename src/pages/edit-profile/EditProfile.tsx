@@ -120,7 +120,6 @@ const EditProfile = () => {
               setPreviewImage={setPreviewImage}
               registration={register('picture')}
               setValue={setValue}
-              error={errors.picture}
             />
 
             <motion.button
